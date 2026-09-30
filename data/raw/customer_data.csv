@@ -1,0 +1,16 @@
+Customer_ID,Name,Age,Email,Phone,Gender,City,Income,Purchase_Amount,Purchase_Date
+C001,Rahul Kumar,24,rahul@gmail.com,9876543210,Male,Hyderabad,45000,2500,2026-08-15
+C002,Priya Sharma,29,priya@gmail.com,9876543211,Female,Bangalore,52000,3200,2026-08-16
+C003,Amit Kumar,35,amit@gmail.com,9876543212,Male,Chennai,61000,4500,2026-08-17
+C004,Sneha Reddy,22,sneha@gmail.com,9876543213,Female,Hyderabad,38000,1800,2026-08-18
+C005,Arjun Rao,41,arjun@gmail.com,9876543214,Male,Bangalore,75000,6200,2026-08-19
+C006,Anjali Singh,27,anjali@gmail.com,9876543215,Female,Chennai,49000,2800,2026-08-20
+C007,Ravi Kumar,31,ravi@gmail.com,9876543216,Male,Hyderabad,56000,3500,2026-08-21
+C008,Kavya Reddy,26,kavya@gmail.com,9876543217,Female,Bangalore,47000,2100,2026-08-22
+C009,Manoj Patel,38,manoj@gmail.com,9876543218,Male,Chennai,68000,5100,2026-08-23
+C010,Divya Rao,23,divya@gmail.com,9876543219,Female,Hyderabad,42000,2400,2026-08-24
+C011,Varun Das,45,varun@gmail.com,9876543220,Male,Bangalore,82000,7300,2026-08-25
+C012,Pooja Reddy,30,pooja@gmail.com,9876543221,Female,Chennai,51000,3100,2026-08-26
+C013,Kiran Kumar,28,kiran@gmail.com,9876543222,Male,Hyderabad,46000,2700,2026-08-27
+C014,Neha Sharma,34,neha@gmail.com,9876543223,Female,Bangalore,59000,3900,2026-08-28
+C015,Suresh Rao,40,suresh@gmail.com,9876543224,Male,Chennai,72000,5800,2026-08-29
