@@ -52,11 +52,39 @@ An AI-powered data quality system that automatically profiles, cleans, validates
 
 
 
-\## Project Status
+\### Days 1–5 Progress
 
 
 
-Module 1 - Advanced Data Profiling is completed.
+\#### Project Setup
+
+
+
+\- Python virtual environment configured
+
+\- Project directory structure created
+
+\- Git repository initialized
+
+\- GitHub repository created and made public
+
+\- Project pushed to GitHub
+
+
+
+\#### Dataset Preparation
+
+
+
+\- Customer dataset created
+
+\- Intentionally corrupted customer dataset created for testing
+
+\- Dynamic dataset input implemented
+
+
+
+\#### Module 1 - Advanced Data Profiling
 
 
 
@@ -100,7 +128,71 @@ The profiler has been tested using both clean and intentionally corrupted custom
 
 
 
-Module 2 - Data Cleaning is currently under development.
+\#### Module 2 - Basic Data Cleaning
+
+
+
+The initial cleaning pipeline currently supports:
+
+
+
+\- Duplicate row removal
+
+\- Whitespace normalization
+
+\- Gender value normalization
+
+\- Missing Age imputation using median
+
+\- Cleaned dataset generation
+
+
+
+The cleaning pipeline converts the dirty customer dataset into a processed dataset while preserving the original raw dataset.
+
+
+
+\### Current Pipeline
+
+
+
+Raw Dataset  
+
+↓  
+
+Data Profiling  
+
+↓  
+
+Basic Data Cleaning  
+
+↓  
+
+Cleaned Dataset
+
+
+
+\### Next Steps
+
+
+
+\- Advanced missing-value handling
+
+\- Data normalization and transformation
+
+\- ML-based imputation
+
+\- Rule-based validation
+
+\- Anomaly detection
+
+\- NLP-based column classification
+
+\- Complete automated pipeline
+
+\- CLI and Docker integration
+
+\- Testing and documentation
 
 
 
