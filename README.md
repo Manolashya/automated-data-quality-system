@@ -28,23 +28,23 @@ An AI-powered data quality system that automatically profiles, cleans, validates
 
 
 
-\- Python
+\* Python
 
-\- Pandas
+\* Pandas
 
-\- NumPy
+\* NumPy
 
-\- Scikit-learn
+\* Scikit-learn
 
-\- Machine Learning
+\* Machine Learning
 
-\- NLP
+\* NLP
 
-\- Pytest
+\* Pytest
 
-\- Docker
+\* Docker
 
-\- Git \& GitHub
+\* Git \& GitHub
 
 
 
@@ -52,7 +52,7 @@ An AI-powered data quality system that automatically profiles, cleans, validates
 
 
 
-\### Days 1–5 Progress
+\### Days 1–10 Progress
 
 
 
@@ -60,15 +60,15 @@ An AI-powered data quality system that automatically profiles, cleans, validates
 
 
 
-\- Python virtual environment configured
+\* Python virtual environment configured
 
-\- Project directory structure created
+\* Project directory structure created
 
-\- Git repository initialized
+\* Git repository initialized
 
-\- GitHub repository created and made public
+\* GitHub repository created and made public
 
-\- Project pushed to GitHub
+\* Project pushed to GitHub
 
 
 
@@ -76,15 +76,19 @@ An AI-powered data quality system that automatically profiles, cleans, validates
 
 
 
-\- Customer dataset created
+\* Customer dataset created
 
-\- Intentionally corrupted customer dataset created for testing
+\* Intentionally corrupted customer dataset created for testing
 
-\- Dynamic dataset input implemented
+\* Dynamic dataset input implemented
 
 
 
-\#### Module 1 - Advanced Data Profiling
+\---
+
+
+
+\## Module 1 - Advanced Data Profiling \& Metadata Intelligence
 
 
 
@@ -92,35 +96,89 @@ The profiling module currently supports:
 
 
 
-\- Dataset structure analysis
+\### Dataset Profiling
 
-\- Data type detection
 
-\- Missing-value analysis
 
-\- Duplicate detection
+\* Dataset structure analysis
 
-\- Statistical summary
+\* Data type detection
 
-\- Cardinality analysis
+\* Missing-value analysis
 
-\- Value distribution analysis
+\* Duplicate detection
 
-\- Correlation analysis
+\* Statistical summary
 
-\- Semantic column detection
+\* Cardinality analysis
 
-\- Email, phone, and date pattern detection
+\* Value distribution analysis
 
-\- PII column detection
+\* Correlation analysis
 
-\- Mixed-type detection
 
-\- Type consistency checking
 
-\- Suspicious column detection
+\### Semantic \& Metadata Analysis
 
-\- JSON profiling report generation
+
+
+\* Semantic column detection
+
+\* Email, phone, and date pattern detection
+
+\* PII column detection
+
+\* Mixed-type detection
+
+\* Type consistency checking
+
+\* Suspicious column detection
+
+
+
+\### Data Quality Metrics
+
+
+
+\* Missing-value percentage
+
+\* Unique-value percentage
+
+\* Column completeness score
+
+\* Email validity percentage
+
+\* Phone validity percentage
+
+\* Date validity percentage
+
+\* Age validity percentage
+
+\* Income validity percentage
+
+\* Purchase amount validity percentage
+
+\* Gender consistency validation
+
+\* City consistency validation
+
+\* Customer ID format validation
+
+
+
+\### Validation Summary
+
+
+
+The profiler generates:
+
+
+
+\* Individual validation scores for supported data-quality rules
+
+\* Overall validation quality score
+
+\* JSON profiling report
 
 
 
@@ -128,7 +186,11 @@ The profiler has been tested using both clean and intentionally corrupted custom
 
 
 
-\#### Module 2 - Basic Data Cleaning
+\---
+
+
+
+\## Module 2 - Basic Data Cleaning
 
 
 
@@ -136,15 +198,15 @@ The initial cleaning pipeline currently supports:
 
 
 
-\- Duplicate row removal
+\* Duplicate row removal
 
-\- Whitespace normalization
+\* Whitespace normalization
 
-\- Gender value normalization
+\* Gender value normalization
 
-\- Missing Age imputation using median
+\* Missing Age imputation using median
 
-\- Cleaned dataset generation
+\* Cleaned dataset generation
 
 
 
@@ -152,47 +214,145 @@ The cleaning pipeline converts the dirty customer dataset into a processed datas
 
 
 
-\### Current Pipeline
+\---
 
 
 
-Raw Dataset  
+\## Current Pipeline
 
-↓  
 
-Data Profiling  
 
-↓  
+```text
 
-Basic Data Cleaning  
+Raw Dataset
 
-↓  
+&#x20;    ↓
+
+Data Profiling
+
+&#x20;    ↓
+
+Data Quality Validation
+
+&#x20;    ↓
+
+Basic Data Cleaning
+
+&#x20;    ↓
 
 Cleaned Dataset
 
-
-
-\### Next Steps
+```
 
 
 
-\- Advanced missing-value handling
+\---
 
-\- Data normalization and transformation
 
-\- ML-based imputation
 
-\- Rule-based validation
+\## Current Data Quality Validation
 
-\- Anomaly detection
 
-\- NLP-based column classification
 
-\- Complete automated pipeline
+The intentionally corrupted dataset contains issues such as:
 
-\- CLI and Docker integration
 
-\- Testing and documentation
+
+\* Missing Age value
+
+\* Missing Email value
+
+\* Invalid email format
+
+\* Invalid phone number
+
+\* Invalid date
+
+\* Age outside the valid range
+
+\* Negative income
+
+\* Inconsistent gender value
+
+\* Inconsistent city value
+
+\* Duplicate customer record
+
+
+
+The profiling and validation modules successfully identify these issues and calculate corresponding quality percentages.
+
+
+
+\---
+
+
+
+\## Git \& GitHub Progress
+
+
+
+The project is maintained using Git and GitHub for version control.
+
+
+
+Major milestones completed:
+
+
+
+\* Initial project setup committed
+
+\* Profiling module implemented
+
+\* Dataset input handling implemented
+
+\* Basic cleaning pipeline implemented
+
+\* Advanced profiling and validation features implemented through Day 10
+
+\* Changes pushed to the `main` branch
+
+
+
+\---
+
+
+
+\## Next Steps
+
+
+
+\### Day 11 Onwards
+
+
+
+\* Advanced missing-value handling
+
+\* Data normalization and transformation
+
+\* Fuzzy duplicate detection
+
+\* ML-based imputation
+
+\* Advanced rule-based validation
+
+\* AI-based anomaly detection
+
+\* NLP-based column classification
+
+\* Data drift detection
+
+\* Complete automated pipeline
+
+\* CLI and Docker integration
+
+\* Testing and documentation
+
+\* Final project presentation
+
+
+
+\---
 
 
 
@@ -201,4 +361,6 @@ Cleaned Dataset
 
 
 Mano Lashya
+
+
 
