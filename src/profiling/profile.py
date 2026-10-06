@@ -199,6 +199,94 @@ import json
 semantic_types={}
 for column in df.columns:
      semantic_types[column]=detect_semantic_type(column)
+missing_percentage=(df.isnull().sum()/len(df)*100).round(2)
+unique_percentage = (
+    df.nunique() / len(df) * 100
+).round(2)
+completeness_score = ((df.notnull().sum() / len(df)) * 100).round(2)
+email_validity = None
+if "Email" in df.columns:
+    email_pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+    valid_emails = df["Email"].dropna().astype(str).str.match(email_pattern)
+    email_validity = round(valid_emails.sum() / len(valid_emails) * 100, 2)
+phone_validity = None
+if "Phone" in df.columns:
+    phone_pattern = r"^[6-9]\d{9}$"
+    valid_phones = df["Phone"].dropna().astype(str).str.match(phone_pattern)
+    phone_validity = round(valid_phones.sum() / len(valid_phones) * 100, 2)
+date_validity = None
+if "Purchase_Date" in df.columns:
+    valid_dates = pd.to_datetime(df["Purchase_Date"], errors="coerce")
+    date_validity = round(valid_dates.notnull().sum() / len(valid_dates) * 100,2)
+age_validity = None
+age_validity = None
+if "Age" in df.columns:
+    valid_ages = df["Age"].dropna().between(0, 100)
+    age_validity = round(valid_ages.sum() / len(valid_ages) * 100,2)
+income_validity = None
+if "Income" in df.columns:
+    valid_income = df["Income"].dropna() >= 0
+    income_validity = round(valid_income.sum() / len(valid_income) * 100,2)
+purchase_amount_validity = None
+
+if "Purchase_Amount" in df.columns:
+    valid_purchase_amounts = df["Purchase_Amount"].dropna() >= 0
+
+    purchase_amount_validity = round(
+        valid_purchase_amounts.sum() / len(valid_purchase_amounts) * 100,
+        2
+    )
+gender_validity = None
+
+if "Gender" in df.columns:
+    allowed_genders = ["Male", "Female"]
+
+    valid_genders = df["Gender"].dropna().isin(allowed_genders)
+
+    gender_validity = round(valid_genders.sum() / len(valid_genders) *100,2)
+city_validity = None
+
+if "City" in df.columns:
+    allowed_cities = ["Hyderabad", "Bangalore", "Chennai"]
+
+    valid_cities = df["City"].dropna().isin(allowed_cities)
+
+    city_validity = round(
+        valid_cities.sum() / len(valid_cities) * 100,
+        2
+    )
+customer_id_validity = None
+
+if "Customer_ID" in df.columns:
+    customer_id_pattern = r"^C\d{3}$"
+
+    valid_customer_ids = (
+        df["Customer_ID"]
+        .dropna()
+        .astype(str)
+        .str.match(customer_id_pattern)
+    )
+
+    customer_id_validity = round(
+        valid_customer_ids.sum() / len(valid_customer_ids) * 100,
+        2
+    )
+validation_summary = {
+    "email": email_validity,
+    "phone": phone_validity,
+    "date": date_validity,
+    "age": age_validity,
+    "income": income_validity,
+    "purchase_amount": purchase_amount_validity,
+    "gender": gender_validity,
+    "city": city_validity,
+    "customer_id": customer_id_validity
+}
+overall_quality_score = round(
+    sum(validation_summary.values()) / len(validation_summary),
+    2
+)
+
 profiling_report = {
     "dataset_shape": {
         "rows": len(df),
@@ -208,6 +296,20 @@ profiling_report = {
     "data_types": df.dtypes.astype(str).to_dict(),
     "semantic_types": semantic_types,
     "missing_values": df.isnull().sum().to_dict(),
+    "missing_percentage": missing_percentage.to_dict(),
+    "unique_percentage":unique_percentage.to_dict(),
+    "completeness_score": completeness_score.to_dict(),
+    "email_validity_percentage": email_validity,
+    "phone_validity_percentage": phone_validity,
+    "date_validity_percentage": date_validity,
+    "age_validity_percentage": age_validity,
+    "income_validity_percentage": income_validity,
+    "purchase_amount_validity_percentage": purchase_amount_validity,
+    "gender_validity_percentage": gender_validity,
+    "city_validity_percentage": city_validity,
+    "customer_id_validity_percentage": customer_id_validity,
+    "validation_summary": validation_summary,
+    "overall_quality_score": overall_quality_score,
     "duplicate_rows": int(df.duplicated().sum()),
     "cardinality": df.nunique().to_dict(),
     "pii_columns": pii_columns
