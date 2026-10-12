@@ -188,137 +188,41 @@ The profiler has been tested using both clean and intentionally corrupted custom
 
 \---
 
+## Module 2 - Advanced Data Cleaning & Validation Pipeline
 
+The cleaning pipeline currently supports:
 
-\## Module 2 - Basic Data Cleaning
+### Data Cleaning
 
+- Duplicate row removal
+- Whitespace normalization in text columns
+- Gender value normalization (`M` → `Male`, `F` → `Female`)
+- Invalid age detection and handling
+- Invalid income detection and handling
+- Missing Age imputation using the median
+- Missing Income imputation using the median
+- Processed dataset generation
 
+### Data Validation
 
-The initial cleaning pipeline currently supports:
+The cleaning pipeline detects invalid and missing values in:
 
+- Email addresses
+- Phone numbers using a basic Indian mobile-number format
+- Purchase dates
+- Purchase amounts
+- Customer IDs
+- Gender categories
+- City categories
+- Age and Income values
 
+### Cleaning Summary
 
-\* Duplicate row removal
+The pipeline prints a summary of duplicate removal, invalid values detected, missing values handled, and validation results.
 
-\* Whitespace normalization
+Numeric imputation uses median values after invalid Age and Income values are converted to missing values. Invalid email addresses, phone numbers, and purchase dates are detected without inventing corrections or overwriting the original values.
 
-\* Gender value normalization
-
-\* Missing Age imputation using median
-
-\* Cleaned dataset generation
-
-
-
-The cleaning pipeline converts the dirty customer dataset into a processed dataset while preserving the original raw dataset.
-
-
-
-\---
-
-
-
-\## Current Pipeline
-
-
-
-```text
-
-Raw Dataset
-
-&#x20;    ↓
-
-Data Profiling
-
-&#x20;    ↓
-
-Data Quality Validation
-
-&#x20;    ↓
-
-Basic Data Cleaning
-
-&#x20;    ↓
-
-Cleaned Dataset
-
-```
-
-
-
-\---
-
-
-
-\## Current Data Quality Validation
-
-
-
-The intentionally corrupted dataset contains issues such as:
-
-
-
-\* Missing Age value
-
-\* Missing Email value
-
-\* Invalid email format
-
-\* Invalid phone number
-
-\* Invalid date
-
-\* Age outside the valid range
-
-\* Negative income
-
-\* Inconsistent gender value
-
-\* Inconsistent city value
-
-\* Duplicate customer record
-
-
-
-The profiling and validation modules successfully identify these issues and calculate corresponding quality percentages.
-
-
-
-\---
-
-
-
-\## Git \& GitHub Progress
-
-
-
-The project is maintained using Git and GitHub for version control.
-
-
-
-Major milestones completed:
-
-
-
-\* Initial project setup committed
-
-\* Profiling module implemented
-
-\* Dataset input handling implemented
-
-\* Basic cleaning pipeline implemented
-
-\* Advanced profiling and validation features implemented through Day 10
-
-\* Changes pushed to the `main` branch
-
-
-
-\---
-
-
-
-\## Next Steps
+The raw input dataset is preserved, and the cleaned output is generated at `data/processed/cleaned_data.csv`. Generated processed CSV files are excluded from Git tracking.
 
 
 
