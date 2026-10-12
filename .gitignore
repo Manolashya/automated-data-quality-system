@@ -30,3 +30,5 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+#Generated processed datasets
+data/processed/*.csv
