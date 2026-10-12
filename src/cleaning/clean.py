@@ -1,20 +1,46 @@
 
 import pandas as pd
+from pathlib import Path
 
 input_file = "data/raw/dirty_customer_data.csv"
 output_file = "data/processed/cleaned_data.csv"
 
 df = pd.read_csv(input_file)
+# Ensure Age and Income contain numeric values
+for column in ["Age", "Income"]:
+    if column in df.columns:
+        df[column] = pd.to_numeric(df[column], errors="coerce")
 
 print("DATASET LOADED")
 print("-" * 40)
 
+
 print("Original Shape:", df.shape)
 
-# Remove duplicate rows
+# Detect repeated Customer_ID values before removing exact duplicates
+if "Customer_ID" in df.columns:
+    customer_ids = df["Customer_ID"].astype("string").str.strip()
+
+    duplicate_customer_mask = (
+        customer_ids.notna()
+        & customer_ids.duplicated(keep=False)
+    )
+
+    duplicate_customer_ids = sorted(
+        customer_ids[duplicate_customer_mask].unique().tolist()
+    )
+
+    print(
+        "Rows with repeated Customer_ID:",
+        int(duplicate_customer_mask.sum())
+    )
+    print("Repeated Customer_ID values:", duplicate_customer_ids)
+
+# Remove exact duplicate rows
 df = df.drop_duplicates()
 
 print("After Duplicate Removal:", df.shape)
+
 
 # Remove extra spaces from text columns
 text_columns = df.select_dtypes(include="str").columns
@@ -63,26 +89,33 @@ if "Income" in df.columns:
 
     print("Invalid Income values handled")
 
+
 # Handle missing Age values
 missing_age_count = 0
 
 if "Age" in df.columns:
-    missing_age_count = int(df["Age"].isnull().sum())
-
+    missing_age_count = int(df["Age"].isna().sum())
     age_median = df["Age"].median()
-    df["Age"] = df["Age"].fillna(age_median)
 
-    print("Missing Age values filled using median")
+    if pd.notna(age_median):
+        df["Age"] = df["Age"].fillna(age_median)
+        print("Missing Age values filled using median")
+    elif missing_age_count > 0:
+        print("Warning: Age contains only missing values; median imputation is not possible")
+
 # Handle missing Income values
 missing_income_count = 0
 
 if "Income" in df.columns:
-    missing_income_count = int(df["Income"].isnull().sum())
-
+    missing_income_count = int(df["Income"].isna().sum())
     income_median = df["Income"].median()
-    df["Income"] = df["Income"].fillna(income_median)
 
-    print("Missing Income values filled using median")
+    if pd.notna(income_median):
+        df["Income"] = df["Income"].fillna(income_median)
+        print("Missing Income values filled using median")
+    elif missing_income_count > 0:
+        print("Warning: Income contains only missing values; median imputation is not possible")
+
 # Detect invalid and missing Email values
 invalid_email_count = 0
 missing_email_count = 0
@@ -245,6 +278,10 @@ print("Invalid genders detected:", invalid_gender_count)
 print("Missing genders detected:", missing_gender_count)
 print("Invalid cities detected:",invalid_city_count)
 print("Missing cities detected:", missing_city_count)
+
+# Save cleaned dataset
+# Create the output folder if it does not exist
+Path(output_file).parent.mkdir(parents=True, exist_ok=True)
 
 # Save cleaned dataset
 df.to_csv(output_file, index=False)
