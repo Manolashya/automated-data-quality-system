@@ -1,15 +1,19 @@
-
 import pandas as pd
 from pathlib import Path
+
+from cleaning_utils import (
+    remove_exact_duplicates,
+    normalize_text_and_gender,
+    convert_numeric_columns
+)
 
 input_file = "data/raw/dirty_customer_data.csv"
 output_file = "data/processed/cleaned_data.csv"
 
 df = pd.read_csv(input_file)
-# Ensure Age and Income contain numeric values
-for column in ["Age", "Income"]:
-    if column in df.columns:
-        df[column] = pd.to_numeric(df[column], errors="coerce")
+
+# Convert Age and Income to numeric values
+df = convert_numeric_columns(df)
 
 print("DATASET LOADED")
 print("-" * 40)
@@ -37,18 +41,21 @@ if "Customer_ID" in df.columns:
     print("Repeated Customer_ID values:", duplicate_customer_ids)
 
 # Remove exact duplicate rows
-df = df.drop_duplicates()
+df = remove_exact_duplicates(df)
 
 print("After Duplicate Removal:", df.shape)
 
 
-# Remove extra spaces from text columns
+# Clean text whitespace and normalize gender values
+df = normalize_text_and_gender(df)
+
+print("Whitespace cleaned")
+print("Gender values normalized")
 text_columns = df.select_dtypes(include="str").columns
 
 for column in text_columns:
     df[column] = df[column].str.strip()
 
-print("Whitespace cleaned")
 
 # Normalize Gender values
 if "Gender" in df.columns:
@@ -56,8 +63,6 @@ if "Gender" in df.columns:
         "M": "Male",
         "F": "Female"
     })
-
-print("Gender values normalized")
 
 # Count and handle invalid Age values
 invalid_age_count = 0
