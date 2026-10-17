@@ -88,4 +88,3 @@ def test_purchase_date_validation_detects_known_issues(
     """Check that the known invalid purchase date is detected."""
     assert "Purchase date validation completed" in run_cleaning_pipeline
     assert "Invalid purchase dates detected: 1" in run_cleaning_pipeline
-
