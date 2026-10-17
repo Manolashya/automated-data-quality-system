@@ -32,3 +32,4 @@ Thumbs.db
 .idea/
 #Generated processed datasets
 data/processed/*.csv
+.coverage
