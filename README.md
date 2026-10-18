@@ -1,180 +1,235 @@
 # Automated Data Cleaning & Validation System
 
+An automated data quality project built with Python and Pandas to profile datasets, identify data quality issues, clean inconsistent data, validate records, and generate profiling reports.
+
+**Project:** CadetX — Hands-On Ecosystem for Junior Data Professionals
+**Repository:** [Manolashya/automated-data-quality-system](https://github.com/Manolashya/automated-data-quality-system)
+**Development progress:** Through Day 20
+**Primary language:** Python
+
+---
+
 ## Project Overview
 
-An automated data quality system designed to profile, clean, validate, and analyze datasets before they are used for further analysis or machine learning.
+Real-world datasets often contain missing values, duplicate records, inconsistent formats, invalid entries, and unreliable data types. These problems can affect data analysis and downstream applications.
 
-The project aims to improve data quality by identifying missing values, duplicate records, invalid values, inconsistent formats, and other common data issues through automated profiling and cleaning workflows.
+This project aims to automate important data quality tasks through a structured pipeline that includes:
 
-## Project Modules
+- Dataset profiling and metadata analysis
+- Missing-value and duplicate detection
+- Data cleaning and transformation
+- Rule-based data quality validation
+- Quality scoring and JSON report generation
+- Automated testing using Pytest
 
-1. Advanced Data Profiling & Metadata Intelligence
-2. Advanced Data Cleaning & Transformation Pipeline
-3. AI Validation, Anomaly Detection & Rule Engine
-4. Integration, Orchestration & Production Engineering
-
-## Technologies
-
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Machine Learning
-- Natural Language Processing (NLP)
-- Pytest
-- Docker
-- Git & GitHub
+The project is being developed incrementally, with each stage tested and documented before further enhancements are introduced.
 
 ---
 
-## Project Status
+## Project Objectives
 
-### Days 1–10: Project Setup and Data Profiling
+1. Understand the structure and quality of raw datasets.
+2. Identify missing values, duplicate records, and invalid entries.
+3. Detect semantic column types and potential PII columns.
+4. Clean inconsistent data while preserving the original raw dataset.
+5. Validate important customer data fields using predefined rules.
+6. Generate structured profiling reports.
+7. Improve reliability through automated testing and error handling.
+8. Maintain a reproducible development history using Git and GitHub.
 
-#### Project Setup
+---
 
-- Python virtual environment configured
-- Project directory structure created
-- Git repository initialized
-- GitHub repository created and made public
-- Project pushed to GitHub
+## Technologies Used
 
-#### Dataset Preparation
+| Technology | Purpose |
+|---|---|
+| Python | Core programming language |
+| Pandas | Data loading, profiling, cleaning, and transformation |
+| NumPy | Numerical data operations |
+| Regular expressions | Email, phone, and identifier pattern checks |
+| JSON | Structured profiling report generation |
+| Pytest | Automated testing |
+| pytest-cov | Test coverage measurement |
+| Git | Version control |
+| GitHub | Source code hosting and project submission |
 
-- Customer dataset created
-- Intentionally corrupted customer dataset created for testing
-- Dataset input handling implemented
+Machine learning, NLP, advanced anomaly detection, and production deployment are planned extensions rather than claims about the current implementation.
 
-#### Advanced Data Profiling
+---
 
-- Dataset structure and shape analysis
-- Data type detection
-- Missing-value analysis
-- Duplicate-row detection
-- Statistical summaries
+## Project Structure
+
+```text
+automated-data-quality-system/
+|
+|-- data/
+|   |-- raw/
+|   |   |-- customer_data.csv
+|   |   |-- dirty_customer_data.csv
+|   |
+|   |-- processed/
+|       |-- cleaned_data.csv
+|
+|-- src/
+|   |-- profiling/
+|   |   |-- profile.py
+|   |
+|   |-- cleaning/
+|       |-- clean.py
+|
+|-- tests/
+|   |-- test_profiling.py
+|   |-- test_profiling_report.py
+|   |-- test_cleaning.py
+|   |-- test_cleaning_utils.py
+|   |-- test_validation.py
+|   |-- test_pipeline.py
+|
+|-- reports/
+|   |-- profiling_report.json
+|
+|-- README.md
+|-- .gitignore
+```
+
+The exact contents of folders may evolve during development. Generated reports and processed datasets are excluded from Git tracking where configured by `.gitignore`.
+
+---
+
+## Module 1: Data Profiling and Metadata Analysis
+
+The profiling module analyses a dataset before cleaning or transformation.
+
+### Implemented features
+
+**1. Dataset overview**
+- Row and column counts
+- Column names
+- Data types
+- Missing-value counts
+- Duplicate-row counts
+
+**2. Statistical and categorical analysis**
+- Numerical statistical summaries
 - Cardinality analysis
-- Value distribution analysis
-- Correlation analysis
+- Value distributions for supported categorical columns
+- Correlation matrix for numerical columns
 
-#### Semantic and Metadata Analysis
+**3. Semantic column detection**
 
-- Semantic column detection
-- Email, phone, and date pattern detection
-- Personally Identifiable Information (PII) column detection
-- Mixed-type detection
-- Type consistency checking
-- Suspicious column detection
+The profiler classifies columns using their names into categories such as:
 
-#### Data Quality Metrics
+- Email
+- Phone
+- Date
+- Name
+- ID
+- Numeric
+- Categorical
+- Unknown
 
-- Missing-value percentage
-- Unique-value percentage
-- Column completeness score
-- Email validity percentage
-- Phone validity percentage
-- Date validity percentage
-- Age validity percentage
-- Income validity percentage
-- Purchase amount validity percentage
-- Gender consistency validation
-- City consistency validation
-- Customer ID format validation
+**4. Value-based detection**
+- Email pattern detection
+- Ten-digit phone pattern detection
 
-#### Profiling Reports
+**5. Data quality analysis**
+- Mixed Python data-type inspection
+- Missing-value matrix
+- Type consistency checks
+- PII column detection
+- Suspicious-column identification
 
-- Individual validation scores for supported data-quality rules
-- Overall validation quality score
-- JSON profiling report
-- Testing with clean and intentionally corrupted customer datasets
+**6. Profiling report generation**
 
----
+The profiler creates a structured JSON report containing information such as:
 
-## Module 2: Advanced Data Cleaning & Validation Pipeline
+- Dataset shape and column names
+- Data types and semantic types
+- Missing-value counts and percentages
+- Unique-value percentages
+- Column completeness scores
+- Field-specific validation percentages
+- Validation summary and overall quality score
+- Duplicate-row count
+- Column cardinality
+- Detected PII columns
 
-### Days 11–15: Cleaning and Validation Improvements
+The report is generated at:
 
-The cleaning pipeline processes the intentionally corrupted customer dataset and saves the cleaned result while preserving the original raw dataset.
+`reports/profiling_report.json`
 
-#### Data Cleaning Features
+### Current limitations
 
-- Exact duplicate-row removal
-- Whitespace normalization in text columns
-- Gender normalization (`M` to `Male` and `F` to `Female`)
-- Numeric conversion of Age and Income values
-- Invalid Age detection and handling
-- Invalid Income detection and handling
-- Missing Age imputation using the median
-- Missing Income imputation using the median
-- Safe median-imputation checks when a median cannot be calculated
-- Automatic creation of the output directory when it does not exist
-- Cleaned dataset generation
-
-#### Data Validation Features
-
-The pipeline detects invalid or missing values in the following fields:
-
-- Email addresses
-- Phone numbers using a basic Indian mobile-number format
-- Purchase dates
-- Purchase amounts
-- Customer IDs
-- Gender categories
-- City categories
-- Age values
-- Income values
-
-Validation identifies problems without inventing corrections for invalid email addresses, phone numbers, or purchase dates.
-
-#### Duplicate Customer ID Detection
-
-- Detects repeated `Customer_ID` values before exact duplicate removal
-- Reports the number of rows associated with repeated IDs
-- Reports the repeated customer ID values
-- Removes exact duplicate rows separately
-
-Repeated customer IDs are reported for investigation; the pipeline does not automatically delete different records just because they share an ID.
-
-#### Cleaning Summary
-
-The pipeline reports:
-
-- Original dataset dimensions
-- Rows with repeated customer IDs
-- Dataset dimensions after exact duplicate removal
-- Invalid and missing values detected
-- Missing Age and Income values filled
-- Validation results for supported fields
-- Output file location
-
-#### Reliability Improvements
-
-- Converts Age and Income to numeric values, treating unconvertible values as missing
-- Avoids attempting median imputation when no valid median is available
-- Creates the output directory automatically before saving the cleaned dataset
-
-### Current Test Dataset Results
-
-The intentionally corrupted customer dataset contains 16 rows and 10 columns before cleaning.
-
-The latest verified cleaning run produced the following results:
-
-| Metric | Result |
-|---|---:|
-| Original rows | 16 |
-| Rows after exact duplicate removal | 15 |
-| Output columns | 10 |
-| Rows associated with repeated Customer IDs before deduplication | 2 |
-| Repeated Customer ID | C015 |
-| Missing Age values after cleaning | 0 |
-| Missing Income values after cleaning | 0 |
-| Invalid Age values after cleaning | 0 |
-| Negative Income values after cleaning | 0 |
-
-**Note:** The validation pipeline currently detects certain invalid email, phone, and date values rather than automatically correcting them. The results above describe the current test dataset and are not a guarantee for every possible input dataset.
+Semantic detection primarily uses column names, and the current mixed-type inspection checks values after Pandas has loaded the CSV. Therefore, it may not detect every inconsistent representation in the original file. More advanced value-level type inference is a potential improvement.
 
 ---
 
-## Current Pipeline
+## Module 2: Data Cleaning and Transformation
+
+The cleaning module transforms the dirty customer dataset into a more consistent form.
+
+### Implemented cleaning operations
+
+- Load the raw CSV dataset.
+- Normalize whitespace in applicable values.
+- Standardize gender representations, including `M` and `F`.
+- Convert invalid numeric entries into missing values where applicable.
+- Handle missing values in supported numeric columns.
+- Validate email addresses and phone numbers.
+- Identify invalid dates.
+- Check customer identifiers and categorical fields.
+- Detect and remove duplicate records where configured.
+- Save the cleaned output separately from the raw dataset.
+
+### Data preservation
+
+The raw dataset is retained as the input source. The cleaned dataset is written to:
+
+`data/processed/cleaned_data.csv`
+
+This separation allows the original data to remain available for comparison and reproducibility.
+
+---
+
+## Module 3: Data Quality Validation
+
+The validation functionality checks important customer fields against predefined rules.
+
+Current validation areas include:
+
+- Email format
+- Phone number format
+- Purchase date validity
+- Age range
+- Non-negative income
+- Non-negative purchase amount
+- Allowed gender values
+- Allowed city values
+- Customer ID format
+
+The profiler calculates field-specific validation percentages and combines available validation scores into an overall quality score.
+
+The overall score depends on the dataset and the validation rules applied. It should be interpreted alongside the individual validation results rather than as a universal measure of dataset correctness.
+
+### Planned enhancements
+
+- Configurable validation rules
+- More comprehensive domain-specific constraints
+- Advanced imputation strategies
+- Machine-learning-based anomaly detection
+- NLP-based column classification
+- Fuzzy duplicate detection
+- Data drift detection
+
+These enhancements require separate implementation and testing before being considered complete.
+
+---
+
+## Module 4: Pipeline Integration and Production Engineering
+
+The project is being developed toward a more reliable end-to-end data quality pipeline.
+
+### Current workflow
 
 ```text
 Raw Customer Dataset
@@ -198,76 +253,221 @@ Missing-Value Handling
 Cleaned Dataset
         |
         v
-Validation Summary
+Validation Summary and Reports
 ```
 
-## Project Structure
-
-```text
-automated-data-quality-system/
-|
-|-- data/
-|   |-- raw/
-|   |-- processed/
-|
-|-- src/
-|   |-- profiling/
-|   |-- cleaning/
-|       |-- clean.py
-|
-|-- README.md
-|-- .gitignore
-```
-
-Generated processed CSV files are excluded from Git tracking so that generated datasets do not unnecessarily clutter the repository.
-
----
-
-## Module 3: Planned AI Validation and Anomaly Detection
-
-The following features are planned for future development and should not be considered fully implemented unless separately completed and tested.
-
-- Advanced rule-based validation engine
-- Machine-learning-based anomaly detection
-- Advanced imputation strategies
-- NLP-based column classification
-- Fuzzy duplicate detection
-- Data drift detection
-- More comprehensive data quality rules
-- Automated quality scoring and reporting improvements
-
-## Module 4: Planned Integration and Production Engineering
+### Planned production enhancements
 
 - End-to-end pipeline orchestration
-- Command-line interface (CLI)
-- Automated testing with Pytest
+- Command-line interface improvements
+- Structured logging
+- Expanded error handling
 - Docker integration
-- Improved error handling and logging
-- Performance and reliability improvements
-- Project documentation and final presentation
+- Performance improvements
+- Additional integration and edge-case tests
+
+These features should be marked complete only after implementation and verification.
 
 ---
 
-## Git & GitHub Progress
+## Dataset and Profiling Results
 
-The project is maintained using Git and GitHub for version control.
+The project uses customer data containing fields such as:
 
-Major milestones:
+`Customer_ID`, `Name`, `Age`, `Email`, `Phone`, `Gender`, `City`, `Income`, `Purchase_Amount`, and `Purchase_Date`.
 
-- Initial project setup committed
-- Dataset preparation completed
-- Advanced profiling and metadata analysis implemented
-- Basic cleaning pipeline implemented
-- Numeric conversion and missing-value handling improved
-- Data validation checks implemented
-- Repeated customer ID detection added
-- Cleaning output verified using Pandas
-- Project progress documented in this README
+An intentionally corrupted dataset is used to exercise profiling and validation functionality.
 
-GitHub repository: https://github.com/Manolashya/automated-data-quality-system
+### Verified profiling run
+
+The dirty customer dataset produced the following results during the latest verified run:
+
+| Metric | Result |
+|---|---:|
+| Rows | 16 |
+| Columns | 10 |
+| Duplicate rows | 1 |
+| Missing Age values | 1 |
+| Missing Email values | 1 |
+| Overall quality score | 95.05 |
+
+Detected PII columns:
+
+- `Customer_ID`
+- `Name`
+- `Email`
+- `Phone`
+
+The profiling script executed successfully, and the generated JSON report was parsed successfully.
+
+These results describe the particular dataset and execution used for verification; other datasets may produce different results.
+
+---
+
+## Running the Project
+
+Run these commands from the project root directory.
+
+### 1. Activate the virtual environment
+
+On Windows CMD:
+
+```cmd
+.venv\Scripts\activate
+```
+
+### 2. Run data profiling
+
+```cmd
+python src\profiling\profile.py data\raw\dirty_customer_data.csv
+```
+
+The script prints profiling information and writes the JSON report to `reports/profiling_report.json`.
+
+### 3. Run data cleaning
+
+```cmd
+python src\cleaning\clean.py
+```
+
+The cleaning script processes the configured raw dataset and writes its output to the configured processed-data path.
+
+### 4. Run automated tests
+
+```cmd
+python -m pytest -q
+```
+
+### 5. Run tests with coverage
+
+```cmd
+python -m pytest --cov=src --cov-report=term-missing -v
+```
+
+### 6. Check profiling-script syntax
+
+```cmd
+python -m py_compile src\profiling\profile.py
+```
+
+---
+
+## Automated Testing and Verification
+
+Pytest is used to test the project modules and important data quality behaviours.
+
+Testing covers areas such as:
+
+- Profiling functionality
+- Profiling report contents
+- Cleaning behaviour
+- Validation rules
+- Pipeline execution
+- Error-handling scenarios
+
+### Latest verified result
+
+**35 tests passed.**
+
+The profiling script was also executed directly against the dirty customer dataset, and its generated JSON report was verified as valid.
+
+This test count records the latest verified run associated with commit `c72f92f`. It should be updated if the test suite changes.
+
+---
+
+## Development Progress: Days 1–20
+
+The project was developed incrementally, starting with repository setup and data preparation and progressing toward profiling, cleaning, validation, testing, and documentation.
+
+### Early development
+
+- Created the project repository and local development environment.
+- Prepared the customer dataset for profiling and cleaning.
+- Implemented the initial profiling workflow.
+- Developed basic cleaning and transformation functionality.
+- Improved numeric conversion and missing-value handling.
+
+### Intermediate development
+
+- Added profiling metadata and statistical analysis.
+- Implemented field-specific data validation.
+- Added duplicate detection and cleaning checks.
+- Developed automated tests for profiling, cleaning, validation, and pipeline behaviour.
+- Improved error handling and test coverage.
+
+### Day 16–20: Testing, profiling restoration, and verification
+
+- Continued automated testing of the project modules.
+- Improved profiling-script input validation and error handling.
+- Restored value-based email and phone detection.
+- Restored mixed-type inspection.
+- Restored the missing-value matrix and type consistency checks.
+- Restored PII and suspicious-column detection.
+- Verified profiler execution against the dirty customer dataset.
+- Verified JSON report generation.
+- Ran the complete test suite successfully with 35 passing tests.
+- Committed and pushed the profiling improvements to GitHub.
+
+### Latest milestone commit
+
+`c72f92f` — `Restore profiling analysis features`
+
+The repository's Git history provides the detailed record of the committed changes.
+
+---
+
+## Git and GitHub
+
+The project uses Git for version control and GitHub to host its source code.
+
+Repository:
+
+https://github.com/Manolashya/automated-data-quality-system
+
+Useful commands:
+
+```cmd
+git status
+git log --oneline -10
+git pull origin main
+git push origin main
+```
+
+Use focused commits with descriptive messages. Avoid committing virtual environments, generated files, secrets, or unrelated temporary files.
+
+---
+
+## Future Improvements
+
+Potential future improvements include:
+
+- Stronger detection of inconsistent types in raw CSV values
+- Configurable profiling and validation rules
+- Better reporting of invalid and suspicious records
+- More edge-case and regression tests
+- Improved pipeline orchestration
+- Machine-learning-based anomaly detection
+- NLP-assisted semantic classification
+- Fuzzy duplicate detection
+- Data drift monitoring
+- Docker-based execution
+- Architecture and pipeline documentation
+- A final project demonstration
+
+These items represent possible next steps and are not all implemented in the current version.
 
 ---
 
 ## Author
 
-Mano Lashya
+**Mano Lashya**
+
+GitHub: [Manolashya](https://github.com/Manolashya)
+
+---
+
+## Project Summary
+
+The Automated Data Cleaning & Validation System demonstrates a structured approach to data profiling, cleaning, validation, and report generation using Python and Pandas.
+
+Through incremental implementation and automated testing, the project establishes a foundation for a more comprehensive data quality pipeline. Further enhancements can extend this foundation toward advanced anomaly detection, orchestration, and production-ready data processing.
