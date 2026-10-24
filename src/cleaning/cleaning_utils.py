@@ -36,3 +36,44 @@ def convert_numeric_columns(df):
             )
 
     return df
+
+def impute_missing_values(df, median_columns=None):
+    """
+    Fill missing values using mean, median, or mode.
+
+    Numerical columns use mean by default.
+    Numerical columns listed in median_columns use median.
+    Non-numerical columns use mode.
+    Entirely missing columns are left unchanged.
+
+    Returns a new DataFrame without modifying the original.
+    """
+    df = df.copy(deep=True)
+
+    if median_columns is None:
+        median_columns = []
+
+    for column in df.columns:
+        if not df[column].isna().any():
+            continue
+
+        # Leave columns with no available values unchanged.
+        if df[column].isna().all():
+            continue
+
+        if pd.api.types.is_numeric_dtype(df[column]):
+            if column in median_columns:
+                fill_value = df[column].median()
+            else:
+                fill_value = df[column].mean()
+        else:
+            modes = df[column].mode(dropna=True)
+
+            if modes.empty:
+                continue
+
+            fill_value = modes.iloc[0]
+
+        df[column] = df[column].fillna(fill_value)
+
+    return df
