@@ -2,7 +2,9 @@ import pandas as pd
 import re
 import sys
 import json
+sys.stdout.reconfigure(encoding="utf-8")
 from pathlib import Path
+
 # Path of the raw dataset
 if len(sys.argv)>1:
  file_path=sys.argv[1]
