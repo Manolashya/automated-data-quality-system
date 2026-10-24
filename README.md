@@ -1,28 +1,31 @@
 # Automated Data Cleaning & Validation System
 
-An automated data quality project built with Python and Pandas to profile datasets, identify data quality issues, clean inconsistent data, validate records, and generate profiling reports.
+An automated data quality project built with Python and Pandas to profile datasets, identify data quality issues, clean inconsistent data, validate records, detect anomalies, identify potential duplicate records, monitor data drift, and generate profiling reports.
 
-**Project:** CadetX — Hands-On Ecosystem for Junior Data Professionals
-**Repository:** [Manolashya/automated-data-quality-system](https://github.com/Manolashya/automated-data-quality-system)
-**Development progress:** Through Day 20
-**Primary language:** Python
-
+- **Project:** CadetX — Hands-On Ecosystem for Junior Data Professionals
+- **Repository:** [Manolashya/automated-data-quality-system](https://github.com/Manolashya/automated-data-quality-system)
+- **Development progress:** Through Day 24
+- **Primary language:** Python
 ---
 
 ## Project Overview
 
 Real-world datasets often contain missing values, duplicate records, inconsistent formats, invalid entries, and unreliable data types. These problems can affect data analysis and downstream applications.
 
-This project aims to automate important data quality tasks through a structured pipeline that includes:
+This project aims to automate important data quality tasks through a collection of modules that includes:
 
 - Dataset profiling and metadata analysis
 - Missing-value and duplicate detection
 - Data cleaning and transformation
 - Rule-based data quality validation
+- Advanced missing-value imputation
+- Machine-learning-based anomaly detection
+- Fuzzy duplicate detection
+- Numerical and categorical data drift detection
 - Quality scoring and JSON report generation
 - Automated testing using Pytest
 
-The project is being developed incrementally, with each stage tested and documented before further enhancements are introduced.
+The project is developed incrementally, with each stage tested and documented before further enhancements are introduced.
 
 ---
 
@@ -34,8 +37,12 @@ The project is being developed incrementally, with each stage tested and documen
 4. Clean inconsistent data while preserving the original raw dataset.
 5. Validate important customer data fields using predefined rules.
 6. Generate structured profiling reports.
-7. Improve reliability through automated testing and error handling.
-8. Maintain a reproducible development history using Git and GitHub.
+7. Apply suitable strategies for missing-value imputation.
+8. Detect anomalous records using machine learning.
+9. Identify potentially duplicated records using fuzzy matching.
+10. Detect changes in numerical and categorical data distributions.
+11. Improve reliability through automated testing and error handling.
+12. Maintain a reproducible development history using Git and GitHub.
 
 ---
 
@@ -46,14 +53,14 @@ The project is being developed incrementally, with each stage tested and documen
 | Python | Core programming language |
 | Pandas | Data loading, profiling, cleaning, and transformation |
 | NumPy | Numerical data operations |
+| Scikit-learn | Isolation Forest anomaly detection |
+| RapidFuzz | Fuzzy string similarity and duplicate detection |
 | Regular expressions | Email, phone, and identifier pattern checks |
 | JSON | Structured profiling report generation |
 | Pytest | Automated testing |
 | pytest-cov | Test coverage measurement |
 | Git | Version control |
 | GitHub | Source code hosting and project submission |
-
-Machine learning, NLP, advanced anomaly detection, and production deployment are planned extensions rather than claims about the current implementation.
 
 ---
 
@@ -75,15 +82,31 @@ automated-data-quality-system/
 |   |   |-- profile.py
 |   |
 |   |-- cleaning/
-|       |-- clean.py
+|   |   |-- clean.py
+|   |   |-- cleaning_utils.py
+|   |
+|   |-- validation/
+|   |   |-- rules.py
+|   |
+|   |-- anomaly_detection/
+|   |   |-- detect.py
+|   |
+|   |-- duplicate_detection/
+|   |   |-- detect.py
+|   |
+|   |-- data_drift/
+|       |-- detect.py
 |
 |-- tests/
+|   |-- test_anomaly_detection.py
+|   |-- test_cleaned_dataset.py
+|   |-- test_cleaning.py
+|   |-- test_data_drift.py
+|   |-- test_duplicate_detection.py
+|   |-- test_missing_values.py
 |   |-- test_profiling.py
 |   |-- test_profiling_report.py
-|   |-- test_cleaning.py
-|   |-- test_cleaning_utils.py
-|   |-- test_validation.py
-|   |-- test_pipeline.py
+|   |-- test_validation_rules.py
 |
 |-- reports/
 |   |-- profiling_report.json
@@ -92,7 +115,7 @@ automated-data-quality-system/
 |-- .gitignore
 ```
 
-The exact contents of folders may evolve during development. Generated reports and processed datasets are excluded from Git tracking where configured by `.gitignore`.
+The exact contents of folders may evolve during development. Generated reports, processed datasets, and temporary files are excluded from Git tracking where configured by `.gitignore`.
 
 ---
 
@@ -103,6 +126,7 @@ The profiling module analyses a dataset before cleaning or transformation.
 ### Implemented features
 
 **1. Dataset overview**
+
 - Row and column counts
 - Column names
 - Data types
@@ -110,6 +134,7 @@ The profiling module analyses a dataset before cleaning or transformation.
 - Duplicate-row counts
 
 **2. Statistical and categorical analysis**
+
 - Numerical statistical summaries
 - Cardinality analysis
 - Value distributions for supported categorical columns
@@ -129,10 +154,12 @@ The profiler classifies columns using their names into categories such as:
 - Unknown
 
 **4. Value-based detection**
+
 - Email pattern detection
 - Ten-digit phone pattern detection
 
 **5. Data quality analysis**
+
 - Mixed Python data-type inspection
 - Missing-value matrix
 - Type consistency checks
@@ -141,7 +168,7 @@ The profiler classifies columns using their names into categories such as:
 
 **6. Profiling report generation**
 
-The profiler creates a structured JSON report containing information such as:
+The profiler creates a structured JSON report containing:
 
 - Dataset shape and column names
 - Data types and semantic types
@@ -160,7 +187,7 @@ The report is generated at:
 
 ### Current limitations
 
-Semantic detection primarily uses column names, and the current mixed-type inspection checks values after Pandas has loaded the CSV. Therefore, it may not detect every inconsistent representation in the original file. More advanced value-level type inference is a potential improvement.
+Semantic detection primarily uses column names, and mixed-type inspection checks values after Pandas has loaded the CSV. Therefore, it may not detect every inconsistent representation in the original file. More advanced value-level type inference is a potential improvement.
 
 ---
 
@@ -178,7 +205,7 @@ The cleaning module transforms the dirty customer dataset into a more consistent
 - Validate email addresses and phone numbers.
 - Identify invalid dates.
 - Check customer identifiers and categorical fields.
-- Detect and remove duplicate records where configured.
+- Detect and remove exact duplicate records where configured.
 - Save the cleaned output separately from the raw dataset.
 
 ### Data preservation
@@ -193,9 +220,9 @@ This separation allows the original data to remain available for comparison and 
 
 ## Module 3: Data Quality Validation
 
-The validation functionality checks important customer fields against predefined rules.
+The validation module checks important customer fields against predefined rules.
 
-Current validation areas include:
+### Implemented validation areas
 
 - Email format
 - Phone number format
@@ -206,28 +233,163 @@ Current validation areas include:
 - Allowed gender values
 - Allowed city values
 - Customer ID format
+- Required columns and values
 
-The profiler calculates field-specific validation percentages and combines available validation scores into an overall quality score.
+The validation functionality identifies invalid and missing values and reports data quality issues.
 
-The overall score depends on the dataset and the validation rules applied. It should be interpreted alongside the individual validation results rather than as a universal measure of dataset correctness.
+The profiler also calculates field-specific validation percentages and an overall quality score.
 
-### Planned enhancements
-
-- Configurable validation rules
-- More comprehensive domain-specific constraints
-- Advanced imputation strategies
-- Machine-learning-based anomaly detection
-- NLP-based column classification
-- Fuzzy duplicate detection
-- Data drift detection
-
-These enhancements require separate implementation and testing before being considered complete.
+The overall score depends on the dataset and validation rules applied. It should be interpreted alongside individual validation results rather than as a universal measure of dataset correctness.
 
 ---
 
-## Module 4: Pipeline Integration and Production Engineering
+## Module 4: Advanced Missing-Value Imputation
 
-The project is being developed toward a more reliable end-to-end data quality pipeline.
+The project includes an advanced missing-value imputation function in:
+
+`src/cleaning/cleaning_utils.py`
+
+### Implemented strategies
+
+- Mean imputation for numerical columns by default.
+- Median imputation for numerical columns explicitly selected for median-based replacement.
+- Mode imputation for categorical columns.
+- Preservation of columns containing only missing values.
+- Preservation of the original DataFrame.
+
+The function supports selecting numerical columns that should use median imputation through the `median_columns` parameter.
+
+This allows different imputation strategies to be applied depending on the characteristics of the data.
+
+---
+
+## Module 5: Machine Learning-Based Anomaly Detection
+
+The anomaly detection module uses the Isolation Forest algorithm from Scikit-learn.
+
+Module location:
+
+`src/anomaly_detection/detect.py`
+
+### Implemented features
+
+- Detect unusual observations in numerical data.
+- Use Isolation Forest to identify potential anomalies.
+- Generate anomaly labels.
+- Generate numerical anomaly scores.
+- Handle missing values.
+- Validate input data and contamination settings.
+- Preserve the original DataFrame.
+
+Isolation Forest identifies observations that differ from the general data distribution.
+
+An anomaly detection result indicates a potentially unusual observation. It does not automatically mean that the record is incorrect or should be deleted.
+
+---
+
+## Module 6: Fuzzy Duplicate Detection
+
+The fuzzy duplicate detection module uses RapidFuzz to identify potentially duplicated records based on string similarity.
+
+Module location:
+
+`src/duplicate_detection/detect.py`
+
+### Implemented features
+
+- Compare text values using fuzzy string matching.
+- Calculate similarity scores using `fuzz.ratio`.
+- Support configurable similarity thresholds.
+- Support selecting a column for comparison.
+- Perform case-insensitive matching.
+- Ignore missing and empty values.
+- Return matching row indexes and similarity scores.
+- Validate input DataFrames and thresholds.
+- Preserve the original DataFrame.
+
+### Example
+
+Two names such as:
+
+- `Rahul Kumar`
+- `Rahul Kmar`
+
+can be identified as potentially similar using a configurable similarity threshold.
+
+### Data safety
+
+Fuzzy duplicate detection only reports potential matches. It does not automatically delete or modify records.
+
+This prevents accidental data loss when similar but genuinely different records exist.
+
+---
+
+## Module 7: Data Drift Detection
+
+The data drift module compares a reference dataset with a current dataset to identify changes in data distributions.
+
+Module location:
+
+`src/data_drift/detect.py`
+
+Two statistical approaches are implemented.
+
+### 1. Population Stability Index (PSI)
+
+PSI is used for numerical columns.
+
+It measures how much the distribution of numerical values has changed between the reference and current datasets.
+
+Implemented functionality:
+
+- Create numerical bins using reference dataset quantiles.
+- Calculate distributions for both datasets.
+- Handle zero-frequency bins using smoothing.
+- Calculate the PSI score.
+- Identify potential numerical distribution changes using a configurable threshold.
+
+### 2. Total Variation Distance (TVD)
+
+TVD is used for categorical columns.
+
+It measures differences between categorical value distributions.
+
+Implemented functionality:
+
+- Compare category proportions.
+- Account for categories present in only one dataset.
+- Handle missing values.
+- Calculate the TVD score.
+- Identify categorical distribution changes using a configurable threshold.
+
+### Additional handling
+
+- Validate input DataFrames.
+- Support configurable thresholds and numerical bins.
+- Compare only columns present in both datasets.
+- Skip columns without usable values.
+- Preserve the original datasets.
+
+### Example verification
+
+A manual test compared two datasets with significantly different income distributions but identical city distributions.
+
+The observed results were:
+
+| Column | Method | Drift score | Drift detected |
+|---|---|---:|---|
+| Income | PSI | 14.506272 | Yes |
+| City | TVD | 0.000000 | No |
+
+The result correctly identified the income distribution change while reporting no city distribution drift.
+
+Drift scores should be interpreted according to their respective statistical methods and the selected threshold.
+
+---
+
+## Module 8: Pipeline Integration and Production Engineering
+
+The project is being developed toward a more reliable end-to-end data quality system.
 
 ### Current workflow
 
@@ -241,22 +403,27 @@ Data Profiling
 Data Quality Validation
         |
         v
-Duplicate Detection
-        |
-        v
 Data Cleaning and Transformation
         |
         v
 Missing-Value Handling
         |
         v
-Cleaned Dataset
+Anomaly Detection
         |
         v
-Validation Summary and Reports
+Fuzzy Duplicate Detection
+        |
+        v
+Data Drift Detection
+        |
+        v
+Quality Reports and Analysis
 ```
 
-### Planned production enhancements
+The individual modules are implemented and tested. They are not all yet connected through a single automated production pipeline.
+
+### Potential production enhancements
 
 - End-to-end pipeline orchestration
 - Command-line interface improvements
@@ -276,11 +443,11 @@ The project uses customer data containing fields such as:
 
 `Customer_ID`, `Name`, `Age`, `Email`, `Phone`, `Gender`, `City`, `Income`, `Purchase_Amount`, and `Purchase_Date`.
 
-An intentionally corrupted dataset is used to exercise profiling and validation functionality.
+An intentionally corrupted dataset is used to exercise profiling, cleaning, and validation functionality.
 
-### Verified profiling run
+### Previously verified profiling run
 
-The dirty customer dataset produced the following results during the latest verified run:
+The dirty customer dataset produced the following results during a verified profiling run:
 
 | Metric | Result |
 |---|---:|
@@ -298,9 +465,7 @@ Detected PII columns:
 - `Email`
 - `Phone`
 
-The profiling script executed successfully, and the generated JSON report was parsed successfully.
-
-These results describe the particular dataset and execution used for verification; other datasets may produce different results.
+These results describe a particular dataset and execution. Other datasets may produce different results.
 
 ---
 
@@ -316,7 +481,13 @@ On Windows CMD:
 .venv\Scripts\activate
 ```
 
-### 2. Run data profiling
+### 2. Install required packages
+
+```cmd
+python -m pip install pandas numpy scikit-learn rapidfuzz pytest pytest-cov
+```
+
+### 3. Run data profiling
 
 ```cmd
 python src\profiling\profile.py data\raw\dirty_customer_data.csv
@@ -324,7 +495,7 @@ python src\profiling\profile.py data\raw\dirty_customer_data.csv
 
 The script prints profiling information and writes the JSON report to `reports/profiling_report.json`.
 
-### 3. Run data cleaning
+### 4. Run data cleaning
 
 ```cmd
 python src\cleaning\clean.py
@@ -332,22 +503,24 @@ python src\cleaning\clean.py
 
 The cleaning script processes the configured raw dataset and writes its output to the configured processed-data path.
 
-### 4. Run automated tests
+### 5. Run automated tests
 
 ```cmd
-python -m pytest -q
+python -m pytest -v
 ```
 
-### 5. Run tests with coverage
+### 6. Run tests with coverage
 
 ```cmd
 python -m pytest --cov=src --cov-report=term-missing -v
 ```
 
-### 6. Check profiling-script syntax
+### 7. Check Python syntax
+
+For example:
 
 ```cmd
-python -m py_compile src\profiling\profile.py
+python -m py_compile src\data_drift\detect.py
 ```
 
 ---
@@ -356,48 +529,59 @@ python -m py_compile src\profiling\profile.py
 
 Pytest is used to test the project modules and important data quality behaviours.
 
-Testing covers areas such as:
+### Testing coverage includes
 
-- Profiling functionality
+- Dataset profiling
 - Profiling report contents
-- Cleaning behaviour
-- Validation rules
-- Pipeline execution
-- Error-handling scenarios
+- Data cleaning
+- Data validation rules
+- Missing-value imputation
+- Anomaly detection
+- Fuzzy duplicate detection
+- Numerical data drift detection
+- Categorical data drift detection
+- Invalid inputs and error handling
+- Original DataFrame preservation
+- Cleaned dataset verification
 
-### Latest verified result
+### Latest verified test result
 
-**35 tests passed.**
+**79 tests passed in 10.03 seconds.**
 
-The profiling script was also executed directly against the dirty customer dataset, and its generated JSON report was verified as valid.
+The complete test suite was executed using:
 
-This test count records the latest verified run associated with commit `c72f92f`. It should be updated if the test suite changes.
+```cmd
+python -m pytest -v
+```
+
+All 79 collected tests passed with zero failures in the latest verified run on October 24, 2026.
 
 ---
 
-## Development Progress: Days 1–20
+## Development Progress: Days 1–24
 
-The project was developed incrementally, starting with repository setup and data preparation and progressing toward profiling, cleaning, validation, testing, and documentation.
+The project was developed incrementally, starting with repository setup and data preparation and progressing toward profiling, cleaning, validation, machine learning, and advanced data quality analysis.
 
-### Early development
+### Days 1–10: Project Setup and Initial Development
 
 - Created the project repository and local development environment.
 - Prepared the customer dataset for profiling and cleaning.
 - Implemented the initial profiling workflow.
 - Developed basic cleaning and transformation functionality.
 - Improved numeric conversion and missing-value handling.
+- Added project documentation.
 
-### Intermediate development
+### Days 11–15: Profiling and Cleaning Improvements
 
-- Added profiling metadata and statistical analysis.
-- Implemented field-specific data validation.
-- Added duplicate detection and cleaning checks.
-- Developed automated tests for profiling, cleaning, validation, and pipeline behaviour.
-- Improved error handling and test coverage.
+- Improved data cleaning and validation.
+- Enhanced profiling functionality.
+- Added more data quality checks.
+- Improved handling of invalid and inconsistent values.
+- Expanded automated testing.
 
-### Day 16–20: Testing, profiling restoration, and verification
+### Days 16–20: Testing and Profiling Restoration
 
-- Continued automated testing of the project modules.
+- Continued automated testing of project modules.
 - Improved profiling-script input validation and error handling.
 - Restored value-based email and phone detection.
 - Restored mixed-type inspection.
@@ -405,14 +589,51 @@ The project was developed incrementally, starting with repository setup and data
 - Restored PII and suspicious-column detection.
 - Verified profiler execution against the dirty customer dataset.
 - Verified JSON report generation.
-- Ran the complete test suite successfully with 35 passing tests.
-- Committed and pushed the profiling improvements to GitHub.
+- Documented project progress through Day 20.
 
-### Latest milestone commit
+### Day 21: Rule-Based Data Validation
 
-`c72f92f` — `Restore profiling analysis features`
+- Implemented rule-based data quality validation.
+- Added checks for required values and columns.
+- Added age range validation.
+- Added email validation.
+- Added non-negative income and purchase amount checks.
+- Added gender validation.
+- Added automated tests for validation rules.
 
-The repository's Git history provides the detailed record of the committed changes.
+### Day 22: Machine Learning-Based Anomaly Detection
+
+- Implemented anomaly detection using Isolation Forest.
+- Added numerical feature handling.
+- Generated anomaly labels and scores.
+- Added missing-value handling.
+- Added input validation and error handling.
+- Created automated tests for anomaly detection.
+
+### Day 23: Advanced Missing-Value Imputation
+
+- Implemented mean imputation for numerical columns.
+- Implemented configurable median imputation.
+- Implemented mode imputation for categorical columns.
+- Added handling for entirely missing columns.
+- Ensured that original DataFrames remain unchanged.
+- Created automated tests for missing-value imputation.
+
+### Day 24: Fuzzy Duplicate Detection and Data Drift Detection
+
+- Installed and integrated RapidFuzz.
+- Implemented fuzzy string matching for potential duplicate detection.
+- Added configurable similarity thresholds.
+- Added case-insensitive matching.
+- Ensured missing and empty values are ignored.
+- Ensured that fuzzy duplicate detection does not delete records.
+- Implemented numerical data drift detection using PSI.
+- Implemented categorical data drift detection using TVD.
+- Added configurable drift thresholds and numerical bins.
+- Added handling for missing values and columns absent from either dataset.
+- Created automated tests for fuzzy duplicate detection.
+- Created automated tests for numerical and categorical data drift.
+- Executed the complete project test suite successfully with 79 passing tests.
 
 ---
 
@@ -420,7 +641,7 @@ The repository's Git history provides the detailed record of the committed chang
 
 The project uses Git for version control and GitHub to host its source code.
 
-Repository:
+**Repository:**
 
 https://github.com/Manolashya/automated-data-quality-system
 
@@ -445,12 +666,13 @@ Potential future improvements include:
 - Configurable profiling and validation rules
 - Better reporting of invalid and suspicious records
 - More edge-case and regression tests
-- Improved pipeline orchestration
-- Machine-learning-based anomaly detection
-- NLP-assisted semantic classification
-- Fuzzy duplicate detection
-- Data drift monitoring
+- End-to-end pipeline orchestration
+- Improved command-line interface
+- Structured logging
 - Docker-based execution
+- Performance optimization
+- Improved data drift monitoring
+- NLP-assisted semantic classification
 - Architecture and pipeline documentation
 - A final project demonstration
 
@@ -468,6 +690,8 @@ GitHub: [Manolashya](https://github.com/Manolashya)
 
 ## Project Summary
 
-The Automated Data Cleaning & Validation System demonstrates a structured approach to data profiling, cleaning, validation, and report generation using Python and Pandas.
+The Automated Data Cleaning & Validation System demonstrates a structured approach to data profiling, cleaning, validation, missing-value imputation, anomaly detection, fuzzy duplicate detection, and data drift monitoring using Python and its data science libraries.
 
-Through incremental implementation and automated testing, the project establishes a foundation for a more comprehensive data quality pipeline. Further enhancements can extend this foundation toward advanced anomaly detection, orchestration, and production-ready data processing.
+Through incremental implementation, modular development, and automated testing, the project establishes a foundation for a more comprehensive data quality system.
+
+The latest verified development milestone includes 79 passing automated tests and implementations covering both traditional data quality techniques and machine-learning-based analysis.
