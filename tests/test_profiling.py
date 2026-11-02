@@ -1,25 +1,5 @@
 
-from pathlib import Path
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-PROFILE_FILE = PROJECT_ROOT / "src" / "profiling" / "profile.py"
-
-
-def load_detect_semantic_type():
-    """Load the semantic detection function without running the whole script."""
-    source = PROFILE_FILE.read_text(encoding="utf-8")
-    start = source.index("def detect_semantic_type(column):")
-    end = source.index("\n\nfor column in df.columns:", start)
-
-    function_source = source[start:end]
-    namespace = {}
-    exec(function_source, namespace)
-
-    return namespace["detect_semantic_type"]
-
-
-detect_semantic_type = load_detect_semantic_type()
+from src.profiling.profile import detect_semantic_type
 
 
 def test_detect_email_column():

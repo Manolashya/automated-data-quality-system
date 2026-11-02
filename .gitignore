@@ -33,3 +33,6 @@ Thumbs.db
 #Generated processed datasets
 data/processed/*.csv
 .coverage
+# Pytest cache and coverage reports
+.pytest_cache/
+htmlcov/

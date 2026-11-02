@@ -1,5 +1,6 @@
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -7,10 +8,15 @@ import streamlit as st
 
 
 # --------------------------------------------------
-# Project paths
+# Project paths and pipeline import
 # --------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.pipeline.runner import run_pipeline
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -27,6 +33,7 @@ st.set_page_config(
 )
 
 st.title("Automated Data Quality Dashboard")
+
 st.write(
     "Upload a CSV dataset to explore its structure, "
     "missing values, duplicates, and data quality."
@@ -39,7 +46,8 @@ st.write(
 
 uploaded_file = st.file_uploader(
     "Upload a CSV file",
-    type=["csv"]
+    type=["csv"],
+    key="main_dataset"
 )
 
 try:
@@ -333,7 +341,7 @@ else:
 
 
 # --------------------------------------------------
-# Download dataset
+# Download original dataset
 # --------------------------------------------------
 
 st.header("8. Download Dataset")
@@ -346,3 +354,170 @@ st.download_button(
     file_name="dataset_download.csv",
     mime="text/csv"
 )
+
+
+# --------------------------------------------------
+# Integrated data quality pipeline
+# --------------------------------------------------
+
+st.header("9. Integrated Data Quality Pipeline")
+
+st.write(
+    "Run cleaning, validation, profiling, anomaly detection, "
+    "fuzzy duplicate detection, and optional data drift analysis "
+    "on the selected dataset."
+)
+
+st.info(
+    "The current pipeline is designed around the project's "
+    "customer dataset structure. Other CSV files may need the "
+    "expected columns and data formats."
+)
+
+reference_file = st.file_uploader(
+    "Optional: Upload a reference CSV for data drift detection",
+    type=["csv"],
+    key="reference_dataset"
+)
+
+if st.button("Run Data Quality Pipeline", type="primary"):
+
+    try:
+        reference_df = None
+
+        if reference_file is not None:
+            reference_df = pd.read_csv(reference_file)
+
+            if reference_df.empty:
+                st.error("The reference dataset is empty.")
+                st.stop()
+
+        with st.spinner("Running the data quality pipeline..."):
+
+            pipeline_results = run_pipeline(
+                df.copy(),
+                reference_df=reference_df
+            )
+
+        st.session_state["pipeline_results"] = pipeline_results
+        st.session_state["pipeline_dataset_name"] = dataset_name
+
+        st.success("Data quality pipeline completed successfully!")
+
+    except Exception as error:
+        st.error(f"Pipeline execution failed: {error}")
+
+
+# --------------------------------------------------
+# Display pipeline results
+# --------------------------------------------------
+
+if "pipeline_results" in st.session_state:
+
+    results = st.session_state["pipeline_results"]
+
+    st.subheader("Pipeline Execution Results")
+
+    if st.session_state.get("pipeline_dataset_name") != dataset_name:
+        st.warning(
+            "These results belong to a previously selected dataset. "
+            "Run the pipeline again to update them."
+        )
+
+    cleaned_df = results["cleaned_data"]
+
+    original_rows = len(df)
+    cleaned_rows = len(cleaned_df)
+
+    validation_issues = results["validation_issues"]
+    anomaly_results = results["anomaly_results"]
+    duplicate_results = results["duplicate_results"]
+    drift_results = results["drift_results"]
+
+    anomaly_count = int(
+        (anomaly_results["Anomaly"] == "Anomaly").sum()
+    )
+
+    result1, result2, result3, result4 = st.columns(4)
+
+    result1.metric("Original Rows", original_rows)
+    result2.metric("Cleaned Rows", cleaned_rows)
+    result3.metric("Validation Issues", len(validation_issues))
+    result4.metric("Anomalies Detected", anomaly_count)
+
+    # Cleaned dataset
+
+    st.subheader("Cleaned Dataset")
+
+    st.dataframe(cleaned_df, width="stretch")
+
+    cleaned_csv = cleaned_df.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="Download Cleaned Dataset",
+        data=cleaned_csv,
+        file_name="cleaned_dataset.csv",
+        mime="text/csv",
+        key="download_cleaned_dataset"
+    )
+
+    # Validation issues
+
+    st.subheader("Validation Results")
+
+    if validation_issues:
+        validation_df = pd.DataFrame(validation_issues)
+        st.warning(f"{len(validation_issues)} validation issue(s) found.")
+        st.dataframe(validation_df, width="stretch")
+    else:
+        st.success("No validation issues found.")
+
+    # Anomaly detection
+
+    st.subheader("Anomaly Detection Results")
+
+    if anomaly_count > 0:
+        detected_anomalies = anomaly_results[
+            anomaly_results["Anomaly"] == "Anomaly"
+        ]
+
+        st.warning(f"{anomaly_count} anomalous record(s) detected.")
+
+        st.dataframe(
+            detected_anomalies,
+            width="stretch"
+        )
+    else:
+        st.success("No anomalies detected.")
+
+    with st.expander("View complete anomaly analysis"):
+        st.dataframe(anomaly_results, width="stretch")
+
+    # Fuzzy duplicate detection
+
+    st.subheader("Fuzzy Duplicate Detection Results")
+
+    if duplicate_results:
+        duplicate_df = pd.DataFrame(duplicate_results)
+        st.warning(
+            f"{len(duplicate_results)} possible fuzzy duplicate pair(s) found."
+        )
+        st.dataframe(duplicate_df, width="stretch")
+    else:
+        st.success("No fuzzy duplicate pairs detected.")
+
+    # Data drift detection
+
+    st.subheader("Data Drift Detection Results")
+
+    if reference_file is None:
+        st.info(
+            "Data drift analysis was not performed. "
+            "Upload a reference CSV and run the pipeline again to compare datasets."
+        )
+
+    elif drift_results:
+        drift_df = pd.DataFrame(drift_results)
+        st.dataframe(drift_df, width="stretch")
+    else:
+        st.success("No data drift results were reported.")

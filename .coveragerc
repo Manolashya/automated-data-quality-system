@@ -1,3 +1,5 @@
 [run]
 source = src
 patch = subprocess
+omit =
+    src/profiling/profile_backup.py

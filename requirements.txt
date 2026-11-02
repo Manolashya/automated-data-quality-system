@@ -7,3 +7,4 @@ seaborn
 pyyaml
 pytest
 streamlit
+pytest-cov
