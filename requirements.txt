@@ -8,3 +8,4 @@ pyyaml
 pytest
 streamlit
 pytest-cov
+Jinja2

@@ -460,6 +460,20 @@ if "pipeline_results" in st.session_state:
         mime="text/csv",
         key="download_cleaned_dataset"
     )
+        # HTML report download
+
+    html_report_path = results["html_report_path"]
+
+    with open(html_report_path, "rb") as report_file:
+        html_report = report_file.read()
+
+    st.download_button(
+        label="Download HTML Quality Report",
+        data=html_report,
+        file_name="data_quality_report.html",
+        mime="text/html",
+        key="download_html_report"
+    )
 
     # Validation issues
 

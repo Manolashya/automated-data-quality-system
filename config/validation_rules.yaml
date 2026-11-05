@@ -1,0 +1,34 @@
+
+required_columns:
+  - Customer_ID
+  - Name
+  - Age
+  - Email
+  - Phone
+  - Gender
+  - City
+  - Income
+  - Purchase_Amount
+  - Purchase_Date
+
+age:
+  min: 0
+  max: 120
+
+email:
+  pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+
+numeric_rules:
+  - column: Income
+    min: 0
+
+  - column: Purchase_Amount
+    min: 0
+
+gender:
+  allowed_values:
+    - male
+    - female
+
+missing_values:
+  check_required_columns: true

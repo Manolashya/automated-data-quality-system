@@ -37,6 +37,7 @@ def test_complete_pipeline_execution(dirty_df):
         "anomaly_results",
         "duplicate_results",
         "drift_results",
+        "html_report_path",
     }
 
     assert set(results.keys()) == expected_keys
@@ -49,6 +50,25 @@ def test_complete_pipeline_execution(dirty_df):
 
     assert results["cleaned_data"].shape == (15, 10)
     assert results["drift_results"] == []
+
+    assert isinstance(results["html_report_path"], Path)
+    assert results["html_report_path"].exists()
+    assert results["html_report_path"].suffix == ".html"
+
+
+def test_pipeline_generates_html_report(dirty_df):
+    """Test that the pipeline generates a complete HTML report."""
+
+    results = run_pipeline(dirty_df)
+
+    report_path = results["html_report_path"]
+    report_content = report_path.read_text(encoding="utf-8")
+
+    assert "<html" in report_content.lower()
+    assert "pipeline_dataset.csv" in report_content
+    assert "Data Quality Report" in report_content
+    assert "Validation Issues" in report_content
+    assert "Missing Values" in report_content
 
 
 def test_pipeline_does_not_modify_original_dataset(dirty_df):

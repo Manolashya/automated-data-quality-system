@@ -1,32 +1,31 @@
 
 import pandas as pd
 
-
-REQUIRED_COLUMNS = [
-    "Customer_ID",
-    "Name",
-    "Age",
-    "Email",
-    "Phone",
-    "Gender",
-    "City",
-    "Income",
-    "Purchase_Amount",
-    "Purchase_Date",
-]
-
-VALID_GENDERS = {"male", "female"}
-
-EMAIL_PATTERN = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+from src.utils.config_loader import load_config
 
 
 def validate_dataframe(df):
     """
-    Validate a pandas DataFrame using predefined data quality rules.
+    Validate a pandas DataFrame using YAML-based configuration.
 
     Returns:
         A list of dictionaries describing validation issues.
     """
+
+    # Load validation rules from YAML.
+    config = load_config()
+
+    required_columns = config["required_columns"]
+    age_min = config["age"]["min"]
+    age_max = config["age"]["max"]
+    email_pattern = config["email"]["pattern"]
+
+    valid_genders = {
+        value.lower()
+        for value in config["gender"]["allowed_values"]
+    }
+
+    numeric_rules = config["numeric_rules"]
 
     issues = []
 
@@ -39,9 +38,11 @@ def validate_dataframe(df):
             "message": message,
         })
 
-    # Rule 1: Check whether required columns exist.
-    for column in REQUIRED_COLUMNS:
-        if column not in df.columns:
+    available_columns = set(df.columns)
+
+    # Rule 1: Check required columns.
+    for column in required_columns:
+        if column not in available_columns:
             add_issue(
                 None,
                 column,
@@ -50,26 +51,26 @@ def validate_dataframe(df):
                 f"Required column '{column}' is missing.",
             )
 
-    # Stop checks for columns that do not exist.
-    available_columns = set(df.columns)
+    # Rule 2: Check missing values.
+    if config.get("missing_values", {}).get(
+        "check_required_columns", True
+    ):
+        for column in required_columns:
+            if column not in available_columns:
+                continue
 
-    # Rule 2: Check missing values in required columns.
-    for column in REQUIRED_COLUMNS:
-        if column not in available_columns:
-            continue
+            missing_rows = df.index[df[column].isna()]
 
-        missing_rows = df.index[df[column].isna()]
+            for row_index in missing_rows:
+                add_issue(
+                    row_index,
+                    column,
+                    "missing_value",
+                    None,
+                    f"Missing value in required column '{column}'.",
+                )
 
-        for row_index in missing_rows:
-            add_issue(
-                row_index,
-                column,
-                "missing_value",
-                None,
-                f"Missing value in required column '{column}'.",
-            )
-
-    # Rule 3: Age must be numeric and between 0 and 120.
+    # Rule 3: Age must be numeric and within configured limits.
     if "Age" in available_columns:
         age = pd.to_numeric(df["Age"], errors="coerce")
 
@@ -84,7 +85,7 @@ def validate_dataframe(df):
                 "Age must be a numeric value.",
             )
 
-        invalid_age = age.notna() & ~age.between(0, 120)
+        invalid_age = age.notna() & ~age.between(age_min, age_max)
 
         for row_index in df.index[invalid_age]:
             add_issue(
@@ -92,13 +93,13 @@ def validate_dataframe(df):
                 "Age",
                 "age_range",
                 df.at[row_index, "Age"],
-                "Age must be between 0 and 120.",
+                f"Age must be between {age_min} and {age_max}.",
             )
 
-    # Rule 4: Email must follow a valid email format.
+    # Rule 4: Email must follow the configured pattern.
     if "Email" in available_columns:
         valid_email = df["Email"].astype("string").str.fullmatch(
-            EMAIL_PATTERN,
+            email_pattern,
             case=False,
             na=False,
         )
@@ -114,9 +115,10 @@ def validate_dataframe(df):
                 "Invalid email format.",
             )
 
-    # Rule 5: Income and Purchase_Amount must be numeric
-    # and non-negative.
-    for column in ["Income", "Purchase_Amount"]:
+    # Rule 5: Numeric columns must satisfy configured minimums.
+    for rule_config in numeric_rules:
+        column = rule_config["column"]
+
         if column not in available_columns:
             continue
 
@@ -133,24 +135,30 @@ def validate_dataframe(df):
                 f"{column} must be numeric.",
             )
 
-        negative_values = numeric_values.notna() & (numeric_values < 0)
+        minimum = rule_config.get("min")
 
-        for row_index in df.index[negative_values]:
-            add_issue(
-                row_index,
-                column,
-                "non_negative",
-                df.at[row_index, column],
-                f"{column} cannot be negative.",
+        if minimum is not None:
+            invalid_values = (
+                numeric_values.notna()
+                & (numeric_values < minimum)
             )
 
-    # Rule 6: Gender must be Male or Female.
+            for row_index in df.index[invalid_values]:
+                add_issue(
+                    row_index,
+                    column,
+                    "non_negative",
+                    df.at[row_index, column],
+                    f"{column} cannot be less than {minimum}.",
+                )
+
+    # Rule 6: Gender must be one of the configured values.
     if "Gender" in available_columns:
         gender = df["Gender"].astype("string").str.strip().str.lower()
 
         invalid_gender = (
             df["Gender"].notna()
-            & ~gender.isin(VALID_GENDERS)
+            & ~gender.isin(valid_genders)
         )
 
         for row_index in df.index[invalid_gender]:
@@ -159,7 +167,7 @@ def validate_dataframe(df):
                 "Gender",
                 "allowed_values",
                 df.at[row_index, "Gender"],
-                "Gender must be Male or Female.",
+                f"Gender must be one of: {', '.join(sorted(valid_genders))}.",
             )
 
     return issues

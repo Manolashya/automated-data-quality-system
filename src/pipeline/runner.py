@@ -7,6 +7,7 @@ from src.profiling.profile import profile_dataframe
 from src.anomaly_detection.detect import detect_anomalies
 from src.duplicate_detection.detect import detect_fuzzy_duplicates
 from src.data_drift.detect import detect_data_drift
+from src.reporting.html_report import generate_html_report
 from src.utils.logger import get_logger
 
 
@@ -115,6 +116,19 @@ def run_pipeline(df, reference_df=None):
                 "Step 6 skipped. No reference dataset provided"
             )
 
+        # Step 7: Generate HTML report
+        logger.info("Step 7: Starting HTML report generation")
+
+        html_report_path = generate_html_report(
+            profiling_report,
+            validation_issues
+        )
+
+        logger.info(
+            "Step 7 completed. HTML report generated: %s",
+            html_report_path
+        )
+
         # Collect all results
         results = {
             "cleaned_data": cleaned_df,
@@ -122,7 +136,8 @@ def run_pipeline(df, reference_df=None):
             "profiling_report": profiling_report,
             "anomaly_results": anomaly_results,
             "duplicate_results": duplicate_results,
-            "drift_results": drift_results
+            "drift_results": drift_results,
+            "html_report_path": html_report_path
         }
 
         logger.info("Data quality pipeline completed successfully")
