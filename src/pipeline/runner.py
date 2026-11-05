@@ -8,6 +8,7 @@ from src.anomaly_detection.detect import detect_anomalies
 from src.duplicate_detection.detect import detect_fuzzy_duplicates
 from src.data_drift.detect import detect_data_drift
 from src.reporting.html_report import generate_html_report
+from src.history.history_tracker import save_quality_history
 from src.utils.logger import get_logger
 
 
@@ -129,6 +130,20 @@ def run_pipeline(df, reference_df=None):
             html_report_path
         )
 
+        # Step 8: Save quality history
+        logger.info("Step 8: Saving quality history")
+
+        history_path = save_quality_history(
+            profiling_report,
+            validation_issues,
+            anomaly_results
+        )
+
+        logger.info(
+            "Step 8 completed. Quality history saved: %s",
+            history_path
+        )
+
         # Collect all results
         results = {
             "cleaned_data": cleaned_df,
@@ -137,7 +152,8 @@ def run_pipeline(df, reference_df=None):
             "anomaly_results": anomaly_results,
             "duplicate_results": duplicate_results,
             "drift_results": drift_results,
-            "html_report_path": html_report_path
+            "html_report_path": html_report_path,
+            "history_path": history_path
         }
 
         logger.info("Data quality pipeline completed successfully")

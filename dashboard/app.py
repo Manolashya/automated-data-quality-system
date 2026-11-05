@@ -535,3 +535,133 @@ if "pipeline_results" in st.session_state:
         st.dataframe(drift_df, width="stretch")
     else:
         st.success("No data drift results were reported.")
+# --------------------------------------------------
+# 10. Quality History
+# --------------------------------------------------
+
+st.header("10. Quality History")
+
+QUALITY_HISTORY = (
+    PROJECT_ROOT / "reports" / "quality_history.csv"
+)
+
+if not QUALITY_HISTORY.exists():
+
+    st.info(
+        "No quality history is available yet. "
+        "Run the data quality pipeline to create your first record."
+    )
+
+else:
+
+    try:
+        history_df = pd.read_csv(QUALITY_HISTORY)
+
+        required_columns = [
+            "timestamp",
+            "dataset_name",
+            "rows",
+            "columns",
+            "quality_score",
+            "completeness",
+            "missing_values",
+            "duplicate_rows",
+            "validation_issues",
+            "anomalies",
+        ]
+
+        missing_columns = [
+            column
+            for column in required_columns
+            if column not in history_df.columns
+        ]
+
+        if missing_columns:
+
+            st.warning(
+                f"History file is missing columns: {missing_columns}"
+            )
+
+        elif history_df.empty:
+
+            st.info("The quality history file contains no records.")
+
+        else:
+
+            # Prepare timestamps and quality scores
+            history_df["parsed_timestamp"] = pd.to_datetime(
+                history_df["timestamp"],
+                errors="coerce",
+                utc=True
+            )
+
+            history_df["quality_score"] = pd.to_numeric(
+                history_df["quality_score"],
+                errors="coerce"
+            )
+
+            valid_history = history_df.dropna(
+                subset=["parsed_timestamp", "quality_score"]
+            ).sort_values("parsed_timestamp")
+
+            if valid_history.empty:
+
+                st.info("No valid quality history records are available.")
+
+            else:
+
+                # Latest execution metrics
+                latest_record = valid_history.iloc[-1]
+
+                history_metric1, history_metric2, history_metric3 = (
+                    st.columns(3)
+                )
+
+                history_metric1.metric(
+                    "Latest Quality Score",
+                    f"{latest_record['quality_score']:.2f}%"
+                )
+
+                history_metric2.metric(
+                    "Total Executions",
+                    len(valid_history)
+                )
+
+                history_metric3.metric(
+                    "Latest Dataset",
+                    latest_record["dataset_name"]
+                )
+
+                # Quality score trend
+                st.subheader("Quality Score Trend")
+
+                quality_trend = valid_history.set_index(
+                    "parsed_timestamp"
+                )[["quality_score"]]
+
+                st.line_chart(
+                    quality_trend,
+                    width="stretch"
+                )
+
+                # Complete execution history
+                st.subheader("Execution History")
+
+                history_display = valid_history[
+                    required_columns
+                ].sort_values(
+                    "timestamp",
+                    ascending=False
+                )
+
+                st.dataframe(
+                    history_display,
+                    width="stretch",
+                    hide_index=True
+                )
+
+    except (OSError, pd.errors.ParserError, UnicodeError) as error:
+
+        st.warning(
+            f"Could not load quality history: {error}"
+        )

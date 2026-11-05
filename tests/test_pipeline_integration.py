@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from src.pipeline.runner import run_pipeline
+from src.history.history_tracker import DEFAULT_HISTORY_PATH
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +26,21 @@ def reference_df():
     return pd.read_csv(REFERENCE_DATASET)
 
 
-def test_complete_pipeline_execution(dirty_df):
+@pytest.fixture
+def temporary_history(monkeypatch, tmp_path):
+    """Use a temporary CSV file instead of modifying project history."""
+
+    history_path = tmp_path / "quality_history.csv"
+
+    monkeypatch.setattr(
+        "src.history.history_tracker.DEFAULT_HISTORY_PATH",
+        history_path
+    )
+
+    return history_path
+
+
+def test_complete_pipeline_execution(dirty_df, temporary_history):
     """Test that all pipeline stages execute and return results."""
 
     results = run_pipeline(dirty_df)
@@ -38,6 +53,7 @@ def test_complete_pipeline_execution(dirty_df):
         "duplicate_results",
         "drift_results",
         "html_report_path",
+        "history_path",
     }
 
     assert set(results.keys()) == expected_keys
@@ -55,8 +71,12 @@ def test_complete_pipeline_execution(dirty_df):
     assert results["html_report_path"].exists()
     assert results["html_report_path"].suffix == ".html"
 
+    assert isinstance(results["history_path"], Path)
+    assert results["history_path"].exists()
+    assert results["history_path"] == temporary_history
 
-def test_pipeline_generates_html_report(dirty_df):
+
+def test_pipeline_generates_html_report(dirty_df, temporary_history):
     """Test that the pipeline generates a complete HTML report."""
 
     results = run_pipeline(dirty_df)
@@ -71,7 +91,10 @@ def test_pipeline_generates_html_report(dirty_df):
     assert "Missing Values" in report_content
 
 
-def test_pipeline_does_not_modify_original_dataset(dirty_df):
+def test_pipeline_does_not_modify_original_dataset(
+    dirty_df,
+    temporary_history
+):
     """Test that pipeline execution preserves the original DataFrame."""
 
     original_df = dirty_df.copy(deep=True)
@@ -81,7 +104,7 @@ def test_pipeline_does_not_modify_original_dataset(dirty_df):
     pd.testing.assert_frame_equal(dirty_df, original_df)
 
 
-def test_cleaning_and_validation_integration(dirty_df):
+def test_cleaning_and_validation_integration(dirty_df, temporary_history):
     """Test that cleaning and validation work together."""
 
     results = run_pipeline(dirty_df)
@@ -101,7 +124,10 @@ def test_cleaning_and_validation_integration(dirty_df):
     )
 
 
-def test_anomaly_and_duplicate_detection_integration(dirty_df):
+def test_anomaly_and_duplicate_detection_integration(
+    dirty_df,
+    temporary_history
+):
     """Test anomaly and fuzzy duplicate detection results."""
 
     results = run_pipeline(dirty_df)
@@ -115,7 +141,11 @@ def test_anomaly_and_duplicate_detection_integration(dirty_df):
     assert isinstance(duplicate_results, list)
 
 
-def test_pipeline_with_reference_dataset(dirty_df, reference_df):
+def test_pipeline_with_reference_dataset(
+    dirty_df,
+    reference_df,
+    temporary_history
+):
     """Test pipeline execution with optional drift detection."""
 
     results = run_pipeline(
@@ -135,15 +165,42 @@ def test_pipeline_with_reference_dataset(dirty_df, reference_df):
         assert "drift_detected" in drift
 
 
-def test_pipeline_rejects_non_dataframe():
+def test_pipeline_rejects_non_dataframe(temporary_history):
     """Test that invalid input types raise TypeError."""
 
     with pytest.raises(TypeError, match="Input must be a pandas DataFrame"):
         run_pipeline([1, 2, 3])
 
 
-def test_pipeline_rejects_empty_dataframe():
+def test_pipeline_rejects_empty_dataframe(temporary_history):
     """Test that an empty DataFrame raises ValueError."""
 
     with pytest.raises(ValueError, match="Input DataFrame cannot be empty"):
         run_pipeline(pd.DataFrame())
+
+
+def test_pipeline_appends_history_records(dirty_df, temporary_history):
+    """Test that repeated pipeline executions create separate records."""
+
+    run_pipeline(dirty_df)
+    run_pipeline(dirty_df)
+
+    history = pd.read_csv(temporary_history)
+
+    assert len(history) == 2
+    assert list(history.columns) == [
+        "timestamp",
+        "dataset_name",
+        "rows",
+        "columns",
+        "quality_score",
+        "completeness",
+        "missing_values",
+        "duplicate_rows",
+        "validation_issues",
+        "anomalies",
+    ]
+
+    assert all(
+        history["dataset_name"] == "pipeline_dataset.csv"
+    )
