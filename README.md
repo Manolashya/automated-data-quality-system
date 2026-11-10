@@ -1,705 +1,669 @@
+# CadetX — Automated Data Quality System
 
-# Automated Data Cleaning & Validation System
-
-An end-to-end Python-based data quality system that profiles datasets, identifies data quality issues, cleans inconsistent data, validates records, detects anomalies, identifies potential duplicate records, monitors data drift, and generates structured reports.
-
-- **Project:** CadetX — Hands-On Ecosystem for Junior Data Professionals
-- **Repository:** [Manolashya/automated-data-quality-system](https://github.com/Manolashya/automated-data-quality-system)
-- **Primary language:** Python
-- **Development milestone:** Days 1-30 completed
-- **Latest test result:** 90 tests passed, 93% code coverage
+An end-to-end Python-based data quality platform that automatically cleans, validates, profiles, and monitors datasets. It detects anomalies, identifies potential duplicates, measures data drift, tracks historical quality, compares executions, and generates actionable recommendations through an interactive Streamlit dashboard.
 
 ---
 
-## 1. Project Overview
+## Project Overview
 
-Real-world datasets often contain missing values, duplicate records, inconsistent formats, invalid entries, and unreliable data types. These problems can affect analysis, reporting, and downstream applications.
+The **Automated Data Quality System** is designed to help data professionals identify and resolve common data quality problems with minimal manual effort.
 
-This project provides a modular data quality solution that combines traditional data processing techniques with machine-learning-based analysis.
+The system accepts raw datasets, performs multiple data quality operations, and produces structured results that help users understand the condition of their data.
 
-### Key features
+It also maintains execution history and generates prioritized recommendations to guide users toward improving data quality.
 
-- Dataset profiling and metadata analysis
-- Missing-value and duplicate detection
-- Data cleaning and transformation
-- Rule-based data quality validation
-- Mean, median, and mode missing-value imputation
-- Machine-learning-based anomaly detection using Isolation Forest
-- Fuzzy duplicate detection using RapidFuzz
-- Numerical and categorical data drift detection
-- Automated end-to-end pipeline execution
-- Command-line interface (CLI)
-- Interactive Streamlit dashboard
-- Structured logging and error handling
-- Automated unit and integration testing
-- JSON profiling report generation
-- Cleaned dataset export
+### Project Information
+
+- **Project:** CadetX — Automated Data Quality System
+- **Development milestone:** Days 1–35 completed
+- **Programming language:** Python
+- **Primary libraries:** Pandas, NumPy, Scikit-learn, RapidFuzz, Streamlit, Pytest
+- **Dashboard:** Streamlit
+- **Latest verified test result:** 133 tests passed
+- **Repository:** [GitHub Repository](https://github.com/Manolashya/automated-data-quality-system)
 
 ---
 
-## 2. Project Objectives
+## Key Features
 
-1. Understand the structure and quality of raw datasets.
-2. Identify missing values, duplicate records, and invalid entries.
-3. Detect semantic column types and potential PII columns.
-4. Clean inconsistent data while preserving original input data.
-5. Validate customer data using predefined rules.
-6. Generate structured profiling reports.
-7. Apply suitable missing-value imputation strategies.
-8. Detect anomalous records using machine learning.
-9. Identify potentially duplicated records using fuzzy matching.
-10. Detect changes in numerical and categorical data distributions.
-11. Integrate individual modules into an automated pipeline.
-12. Provide CLI and dashboard interfaces.
-13. Improve reliability through logging, error handling, and automated tests.
+### 1. Data Profiling
+- Analyze dataset structure and dimensions.
+- Generate statistical summaries.
+- Identify missing values.
+- Calculate data completeness.
+- Analyze column-level characteristics.
+- Generate profiling reports.
+
+### 2. Automated Data Cleaning
+- Handle missing values.
+- Remove duplicate records.
+- Normalize inconsistent values.
+- Clean whitespace and formatting issues.
+- Export cleaned datasets.
+
+### 3. Data Validation
+- Validate required columns.
+- Check missing values.
+- Validate email formats.
+- Validate age ranges.
+- Validate gender values.
+- Validate numerical constraints.
+- Support configurable validation rules through YAML.
+
+### 4. Anomaly Detection
+- Detect unusual records using Isolation Forest.
+- Identify potential outliers.
+- Add anomaly information to analysis results.
+
+### 5. Duplicate Detection
+- Identify exact duplicate records.
+- Detect potential fuzzy duplicates using RapidFuzz.
+- Report similar records for further investigation.
+
+### 6. Data Drift Detection
+- Compare datasets against a reference dataset.
+- Measure changes in numerical and categorical distributions.
+- Use Population Stability Index (PSI) and Total Variation Distance (TVD).
+- Generate drift analysis results.
+
+### 7. Integrated Data Quality Pipeline
+- Execute multiple data quality operations through one pipeline.
+- Combine cleaning, validation, profiling, anomaly detection, duplicate detection, and drift analysis.
+- Generate quality reports.
+- Save execution history.
+- Generate automated recommendations.
+
+### 8. Historical Quality Tracking
+- Store quality metrics across pipeline executions.
+- Track quality score and completeness.
+- Track missing values and duplicate records.
+- Maintain a CSV-based execution history.
+
+### 9. Historical Quality Comparison
+- Compare the latest execution with the previous execution.
+- Identify quality improvements and regressions.
+- Compare multiple data quality metrics.
+- Display historical changes in the dashboard.
+
+### 10. Automated Data Quality Recommendations
+- Generate recommendations based on validation issues.
+- Recommend actions for missing and invalid values.
+- Identify actions for anomalies and potential duplicates.
+- Generate recommendations for detected data drift.
+- Identify historical quality regressions.
+- Assign High, Medium, and Low priority levels.
+
+### 11. Interactive Streamlit Dashboard
+- Upload datasets.
+- View dataset information and quality metrics.
+- Run the integrated data quality pipeline.
+- Explore validation and anomaly results.
+- View duplicate and drift analysis.
+- Compare historical executions.
+- View prioritized recommendations.
+- Download cleaned datasets and reports.
+
+### 12. Automated Testing
+- Unit tests for individual modules.
+- Integration tests for pipeline functionality.
+- Tests for historical tracking and comparison.
+- Tests for recommendation generation.
+- Full project test suite using Pytest.
 
 ---
 
-## 3. Technologies Used
+## Project Architecture
+
+```text
+automated-data-quality-system/
+│
+├── config/
+│   └── validation_rules.yaml
+│
+├── dashboard/
+│   └── app.py
+│
+├── data/
+│   ├── raw/
+│   │   └── dirty_customer_data.csv
+│   │
+│   └── processed/
+│       └── customer_data.csv
+│
+├── reports/
+│
+├── src/
+│   │
+│   ├── profiling/
+│   │   └── profile.py
+│   │
+│   ├── cleaning/
+│   │
+│   ├── validation/
+│   │
+│   ├── anomaly_detection/
+│   │
+│   ├── duplicate_detection/
+│   │
+│   ├── data_drift/
+│   │
+│   ├── history/
+│   │   ├── history_tracker.py
+│   │   └── history_comparator.py
+│   │
+│   ├── recommendations/
+│   │   ├── __init__.py
+│   │   └── recommendation_engine.py
+│   │
+│   ├── pipeline/
+│   │   ├── runner.py
+│   │   └── cli.py
+│   │
+│   ├── reporting/
+│   │   ├── html_report.py
+│   │   └── templates/
+│   │       └── report_template.html
+│   └── utils/
+│       ├── logger.py
+│       └── config_loader.py
+│
+├── tests/
+│   ├── test_pipeline_integration.py
+│   ├── test_history_tracker.py
+│   ├── test_history_comparator.py
+│   └── test_recommendation_engine.py
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+*Note: The architecture above highlights the main project modules. Additional implementation and test files are maintained in their respective directories.*
+
+---
+
+## Technology Stack
 
 | Technology | Purpose |
 |---|---|
 | Python | Core programming language |
-| Pandas | Data loading, cleaning, and analysis |
+| Pandas | Dataset manipulation and analysis |
 | NumPy | Numerical operations |
-| Scikit-learn | Isolation Forest anomaly detection |
-| RapidFuzz | Fuzzy string matching |
-| SciPy | Statistical and scientific operations |
-| Matplotlib | Data visualization |
-| Seaborn | Statistical visualization |
+| Scikit-learn | Anomaly detection using Isolation Forest |
+| RapidFuzz | Fuzzy duplicate detection |
 | Streamlit | Interactive dashboard |
-| PyYAML | YAML configuration support |
-| JSON | Structured profiling reports |
+| PyYAML | Configurable validation rules |
+| Jinja2 | HTML report generation |
 | Pytest | Automated testing |
-| pytest-cov | Test coverage measurement |
-| Logging | Application logging and debugging |
-| Git | Version control |
-| GitHub | Source code hosting |
+| Git and GitHub | Version control and project hosting |
 
 ---
 
-## 4. Project Architecture
+## Installation and Setup
 
-```text
-automated-data-quality-system/
-|
-|-- data/
-|   |-- raw/
-|   |   |-- customer_data.csv
-|   |   |-- dirty_customer_data.csv
-|   |
-|   |-- processed/
-|       |-- cleaned_data.csv
-|
-|-- dashboard/
-|   |-- app.py
-|
-|-- src/
-|   |-- profiling/
-|   |   |-- profile.py
-|   |   |-- profile_backup.py
-|   |
-|   |-- cleaning/
-|   |   |-- clean.py
-|   |   |-- cleaning_utils.py
-|   |
-|   |-- validation/
-|   |   |-- rules.py
-|   |
-|   |-- anomaly_detection/
-|   |   |-- detect.py
-|   |
-|   |-- duplicate_detection/
-|   |   |-- detect.py
-|   |
-|   |-- data_drift/
-|   |   |-- detect.py
-|   |
-|   |-- pipeline/
-|   |   |-- runner.py
-|   |   |-- cli.py
-|   |
-|   |-- utils/
-|       |-- logger.py
-|
-|-- tests/
-|   |-- test_anomaly_detection.py
-|   |-- test_cleaned_dataset.py
-|   |-- test_cleaning.py
-|   |-- test_cli_integration.py
-|   |-- test_data_drift.py
-|   |-- test_duplicate_detection.py
-|   |-- test_missing_values.py
-|   |-- test_pipeline_integration.py
-|   |-- test_profiling.py
-|   |-- test_profiling_report.py
-|   |-- test_validation_rules.py
-|
-|-- reports/
-|   |-- profiling_report.json
-|
-|-- logs/
-|   |-- pipeline.log
-|
-|-- requirements.txt
-|-- README.md
-|-- .gitignore
+### 1. Clone the repository
+
+```powershell
+git clone https://github.com/Manolashya/automated-data-quality-system.git
 ```
 
-Generated files, temporary files, and Python cache directories may also be present locally.
+### 2. Navigate to the project directory
 
----
+```powershell
+cd automated-data-quality-system
+```
 
-## 5. Implemented Modules
+### 3. Create a virtual environment
 
-### Module 1: Data Profiling and Metadata Analysis
+```powershell
+python -m venv .venv
+```
 
-Location: `src/profiling/profile.py`
-
-The profiling module analyses a dataset and generates useful information about its structure and quality.
-
-Implemented features:
-
-- Dataset row and column counts
-- Column names and data types
-- Missing-value counts and percentages
-- Duplicate-row counts
-- Numerical statistical summaries
-- Categorical value distributions
-- Cardinality analysis
-- Numerical correlation analysis
-- Semantic column detection
-- Email and phone pattern detection
-- Mixed-type inspection
-- Missing-value matrix
-- Type consistency checks
-- PII column identification
-- Suspicious-column identification
-- Overall data quality scoring
-
-The profiler generates a structured JSON report at:
-
-`reports/profiling_report.json`
-
-### Module 2: Data Cleaning and Transformation
-
-Location: `src/cleaning/clean.py`
-
-Implemented cleaning operations:
-
-- Whitespace normalization
-- Gender standardization, including M/F representations
-- Numeric conversion
-- Missing-value handling for supported columns
-- Email and phone validation support
-- Invalid date identification
-- Customer identifier and categorical-field checks
-- Exact duplicate removal
-- Saving cleaned data separately from raw data
-
-The cleaned dataset is saved to:
-
-`data/processed/cleaned_data.csv`
-
-The original raw dataset is preserved.
-
-### Module 3: Data Quality Validation
-
-Location: `src/validation/rules.py`
-
-The validation module checks customer records against predefined rules.
-
-Validation areas include:
-
-- Required columns and values
-- Email format
-- Phone number format
-- Purchase date validity
-- Age range
-- Non-negative income
-- Non-negative purchase amount
-- Allowed gender values
-- Allowed city values
-- Customer ID format
-
-Validation issues are returned as structured results containing information such as row index, column, rule, and message.
-
-### Module 4: Missing-Value Imputation
-
-Location: `src/cleaning/cleaning_utils.py`
-
-Implemented strategies:
-
-- Mean imputation for numerical columns
-- Median imputation for selected numerical columns
-- Mode imputation for categorical columns
-- Handling of entirely missing columns
-- Preservation of the original DataFrame
-
-The imputation strategy can be selected according to the characteristics of the dataset.
-
-### Module 5: Machine Learning-Based Anomaly Detection
-
-Location: `src/anomaly_detection/detect.py`
-
-Uses the Isolation Forest algorithm from Scikit-learn.
-
-Implemented features:
-
-- Detect unusual numerical observations
-- Generate anomaly labels
-- Generate anomaly scores
-- Handle missing values
-- Validate input data and contamination settings
-- Preserve the original DataFrame
-
-An anomaly represents a potentially unusual observation. It does not automatically mean that the record is incorrect or should be deleted.
-
-### Module 6: Fuzzy Duplicate Detection
-
-Location: `src/duplicate_detection/detect.py`
-
-Uses RapidFuzz to identify potentially duplicated records based on string similarity.
-
-Implemented features:
-
-- Fuzzy string matching
-- Similarity score calculation
-- Configurable similarity threshold
-- Case-insensitive matching
-- Custom comparison-column support
-- Missing and empty-value handling
-- Matching row indexes and similarity scores
-- Input validation
-
-Example:
-
-- Rahul Kumar
-- Rahul Kmar
-
-These names can be identified as potentially similar.
-
-Fuzzy duplicate detection reports potential matches without automatically deleting records.
-
-### Module 7: Data Drift Detection
-
-Location: `src/data_drift/detect.py`
-
-Compares a reference dataset with a current dataset to identify distribution changes.
-
-**Numerical drift — Population Stability Index (PSI)**
-
-- Numerical binning using reference dataset quantiles
-- Distribution comparison
-- Zero-frequency smoothing
-- PSI score calculation
-- Configurable drift threshold
-
-**Categorical drift — Total Variation Distance (TVD)**
-
-- Category proportion comparison
-- Handling of categories present in only one dataset
-- Missing-value handling
-- TVD score calculation
-- Configurable drift threshold
-
-Additional handling:
-
-- Input validation
-- Configurable numerical bins
-- Comparison of common columns
-- Skipping columns without usable values
-- Preservation of original datasets
-
-Drift scores should be interpreted according to their statistical method and configured threshold.
-
-### Module 8: Integrated Data Quality Pipeline
-
-Location: `src/pipeline/runner.py`
-
-The pipeline integrates the individual modules into one reusable workflow.
-
-Implemented stages:
-
-1. Input DataFrame validation
-2. Data cleaning
-3. Rule-based validation
-4. Dataset profiling
-5. Anomaly detection
-6. Fuzzy duplicate detection
-7. Optional data drift detection
-8. Collection of pipeline results
-
-The pipeline returns a dictionary containing:
-
-- `cleaned_data`
-- `validation_issues`
-- `profiling_report`
-- `anomaly_results`
-- `duplicate_results`
-- `drift_results`
-
-An optional reference DataFrame can be provided to enable data drift detection.
-
-### Module 9: Command-Line Interface
-
-Location: `src/pipeline/cli.py`
-
-The CLI allows users to execute the complete data quality pipeline from PowerShell or a terminal.
-
-Implemented features:
-
-- Input CSV selection
-- Custom output path
-- Optional reference dataset
-- Input file validation
-- CSV format validation
-- Empty dataset handling
-- Pipeline execution
-- Cleaned CSV export
-- Validation issue summary
-- Anomaly results
-- Fuzzy duplicate results
-- Data drift results
-- Error reporting
-
-### Module 10: Interactive Streamlit Dashboard
-
-Location: `dashboard/app.py`
-
-The Streamlit dashboard provides an interactive interface for exploring data quality results.
-
-Implemented capabilities include:
-
-- Dataset upload
-- Dataset overview
-- Data quality analysis
-- Profiling information
-- Cleaning and validation results
-- Anomaly detection results
-- Duplicate detection results
-- Data drift analysis
-- Integrated pipeline execution
-- Optional reference CSV upload
-- Cleaned dataset download
-
-### Module 11: Logging and Error Handling
-
-Location: `src/utils/logger.py`
-
-The project uses Python's logging module to record application events.
-
-Implemented features:
-
-- Reusable project logger
-- Console logging
-- File logging
-- DEBUG, INFO, WARNING, and ERROR levels
-- Timestamped log messages
-- Exception logging
-- Automatic log-directory creation
-- Prevention of duplicate logger handlers
-
-Log file:
-
-`logs/pipeline.log`
-
----
-
-## 6. Running the Project
-
-Run commands from the project root directory.
-
-### Step 1: Activate the virtual environment
-
-For Windows PowerShell:
+### 4. Activate the virtual environment
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-If PowerShell execution policy prevents activation, use the virtual environment's Python executable directly:
+If PowerShell blocks activation, use the virtual environment's Python executable directly:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe
 ```
 
-### Step 2: Install dependencies
+### 5. Install dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### Step 3: Run data profiling
+---
 
-```powershell
-python src/profiling/profile.py data/raw/dirty_customer_data.csv
-```
+## Running the Project
 
-### Step 4: Run data cleaning
+### Run the Streamlit Dashboard
 
-```powershell
-python src/cleaning/clean.py
-```
-
-### Step 5: Run the complete pipeline using the CLI
-
-```powershell
-python -m src.pipeline.cli data/raw/dirty_customer_data.csv
-```
-
-The cleaned dataset is saved by default to:
-
-`data/processed/cleaned_data.csv`
-
-### Step 6: Specify a custom output file
-
-```powershell
-python -m src.pipeline.cli data/raw/dirty_customer_data.csv --output data/processed/custom_output.csv
-```
-
-### Step 7: Run the pipeline with reference data
-
-```powershell
-python -m src.pipeline.cli data/raw/dirty_customer_data.csv --reference data/raw/customer_data.csv
-```
-
-### Step 8: Run the Streamlit dashboard
+From the project root:
 
 ```powershell
 python -m streamlit run dashboard/app.py
 ```
 
-Streamlit displays a local URL in the terminal. Open that URL in your browser to use the dashboard.
+The dashboard will open in your browser.
 
-### Step 9: Run automated tests
+### Run the Data Quality Pipeline
+
+The project provides a pipeline runner and CLI.
+
+To view the available CLI arguments:
 
 ```powershell
-python -m pytest -v
+python -m src.pipeline.cli --help
 ```
 
-### Step 10: Run tests with coverage
+The pipeline can also be called programmatically:
+
+```python
+import pandas as pd
+
+from src.pipeline.runner import run_pipeline
+
+df = pd.read_csv("data/raw/dirty_customer_data.csv")
+
+results = run_pipeline(df)
+
+print("Validation issues:", results["validation_issues"])
+print("Recommendations:", results["recommendations"])
+```
+
+### Run Automated Tests
 
 ```powershell
-python -m pytest --cov=src --cov-report=term-missing -v
+python -m pytest -q
 ```
 
 ---
 
-## 7. Dataset Information and Verified Results
+## Main Project Modules
 
-The project uses customer datasets containing these fields:
+### Module 1 — Data Profiling
 
-`Customer_ID`, `Name`, `Age`, `Email`, `Phone`, `Gender`, `City`, `Income`, `Purchase_Amount`, and `Purchase_Date`.
+Analyzes the dataset and generates information about its structure, columns, data types, completeness, and statistical characteristics.
 
-Two datasets are available:
+### Module 2 — Automated Data Cleaning
 
-- `data/raw/dirty_customer_data.csv` — intentionally contains data quality issues.
-- `data/raw/customer_data.csv` — reference customer dataset.
+Processes raw datasets to address missing values, duplicate records, inconsistent formatting, and other common data quality problems.
 
-### Dirty dataset characteristics
+### Module 3 — Data Validation
 
-Previously verified profiling results:
+Checks datasets against validation rules and identifies invalid or missing values.
 
-| Metric | Result |
-|---|---:|
-| Rows | 16 |
-| Columns | 10 |
-| Duplicate rows | 1 |
-| Missing Age values | 1 |
-| Missing Email values | 1 |
-| Profiling quality score | 95.05 |
-
-Detected PII columns:
-
-- Customer_ID
-- Name
-- Email
-- Phone
-
-### Integrated pipeline verification
-
-A verified pipeline execution on the dirty dataset produced:
-
-| Metric | Result |
-|---|---:|
-| Original rows | 16 |
-| Cleaned rows | 15 |
-| Validation issues | 2 |
-| Anomalous records | 1 |
-| Fuzzy duplicate pairs | 0 |
-| Drift results without reference data | 0 |
-
-Missing or invalid email values are reported rather than automatically inventing replacement email addresses.
-
-The anomaly detection result identifies a potentially unusual record, not necessarily an incorrect one.
-
----
-
-## 8. Automated Testing
-
-The project uses Pytest for unit and integration testing.
-
-Testing includes:
-
-- Data profiling
-- Profiling report generation
-- Data cleaning
-- Data validation rules
-- Missing-value imputation
-- Anomaly detection
-- Fuzzy duplicate detection
-- Numerical data drift
-- Categorical data drift
-- Invalid input handling
-- Original DataFrame preservation
-- Cleaned dataset verification
-- Complete pipeline integration
-- CLI execution and output verification
-- CLI error handling
-
-### Latest verified test result
-
-**90 tests passed in 22.41 seconds, with 93% overall code coverage.**
-
-Command:
-
-```powershell
-python -m pytest -v
-```
-
-Result:
+Validation rules can be configured using:
 
 ```text
-collected 90 items
-
-90 passed in 12.53s
+config/validation_rules.yaml
 ```
 
-The 90 passing tests include the existing module tests and 11 new integration tests:
+### Module 4 — Anomaly Detection
 
-- 7 pipeline integration tests
-- 4 CLI integration tests
+Uses Isolation Forest to identify unusual records that may require additional investigation.
 
----
+### Module 5 — Duplicate Detection
 
-## 9. Development Progress
+Uses exact matching and RapidFuzz-based similarity checks to identify duplicate and potentially duplicate records.
 
-The project was developed incrementally through the following milestones.
+### Module 6 — Data Drift Detection
 
-| Development period | Main work |
+Compares a dataset with a reference dataset to identify changes in numerical and categorical distributions.
+
+### Module 7 — Logging and Error Handling
+
+Provides logging support to help monitor pipeline execution and investigate errors.
+
+### Module 8 — Integrated Data Quality Pipeline
+
+Combines the individual data quality modules into a unified execution workflow.
+
+The pipeline integrates:
+
+1. Data cleaning.
+2. Data validation.
+3. Dataset profiling.
+4. Anomaly detection.
+5. Duplicate detection.
+6. Data drift detection when a reference dataset is supplied.
+7. Quality report generation.
+8. Historical execution tracking.
+9. Historical quality comparison.
+10. Automated recommendation generation.
+
+The pipeline returns structured results that can be used by the dashboard and other project components.
+
+### Module 9 — Command-Line Interface
+
+Provides a command-line entry point for executing the data quality pipeline.
+
+### Module 10 — Interactive Dashboard
+
+The Streamlit dashboard provides an interface for:
+
+- Uploading datasets.
+- Viewing dataset information.
+- Exploring profiling results.
+- Running cleaning and validation.
+- Viewing anomaly and duplicate detection results.
+- Exploring data drift results.
+- Running the integrated pipeline.
+- Downloading processed data and reports.
+- Viewing historical quality information.
+- Comparing recent pipeline executions.
+- Viewing automated recommendations.
+
+### Module 11 — Configurable Validation and HTML Reports
+
+Introduces configurable validation rules and HTML report generation.
+
+The validation configuration supports rules such as:
+
+- Required columns.
+- Age range.
+- Allowed gender values.
+- Non-negative income and purchase values.
+
+The reporting module generates HTML reports containing pipeline results.
+
+### Module 12 — Data Quality History Tracking
+
+Introduces persistent tracking of pipeline executions.
+
+The history tracker stores quality information in:
+
+```text
+reports/quality_history.csv
+```
+
+The recorded information includes:
+
+- Execution timestamp.
+- Dataset name.
+- Quality score.
+- Completeness.
+- Missing values.
+- Duplicate records.
+
+This allows users to monitor quality across multiple executions instead of viewing only the latest result.
+
+### Module 13 — Data Quality History Comparison
+
+Introduces historical comparison functionality.
+
+The history comparator evaluates recent pipeline executions and identifies changes in data quality.
+
+It supports:
+
+- Latest-versus-previous execution comparison.
+- Quality score comparison.
+- Completeness comparison.
+- Missing value comparison.
+- Duplicate record comparison.
+- Identification of improvements and regressions.
+
+The dashboard presents these comparisons to help users understand whether data quality is improving or deteriorating.
+
+### Module 14 — Automated Data Quality Recommendations
+
+Introduces an automated recommendation engine in:
+
+```text
+src/recommendations/recommendation_engine.py
+```
+
+The recommendation engine analyzes pipeline results and generates actionable suggestions.
+
+It considers:
+
+- Validation issues.
+- Missing values.
+- Invalid email formats.
+- Detected anomalies.
+- Potential fuzzy duplicates.
+- Data drift.
+- Historical quality regressions.
+
+Each recommendation contains structured information, including:
+
+- Category.
+- Priority.
+- Issue description.
+- Recommended action.
+- Number of affected records.
+
+Recommendations are classified into three priority levels:
+
+| Priority | Meaning |
 |---|---|
-| Days 1–10 | Repository setup, datasets, initial profiling and cleaning |
-| Days 11–15 | Profiling improvements, cleaning and validation |
-| Days 16–20 | Testing, profiling restoration, PII detection and reports |
-| Day 21 | Rule-based data validation |
-| Day 22 | Isolation Forest anomaly detection |
-| Day 23 | Advanced missing-value imputation |
-| Day 24 | Fuzzy duplicate and data drift detection |
-| Day 25 | Streamlit dashboard |
-| Day 26 | Integrated data quality pipeline |
-| Day 27 | Command-line interface |
-| Day 28 | Logging and error handling |
-| Day 29 | Pipeline and CLI integration testing |
-| Day 30 | Documentation, demo preparation and final repository review |
+| High | Important data quality issue requiring attention |
+| Medium | Issue that should be reviewed and corrected |
+| Low | Lower-priority improvement or monitoring action |
+
+The recommendation engine is integrated into the pipeline, and the dashboard displays recommendation counts, a recommendation table, and detailed actions.
 
 ---
 
-## 10. Future Improvements
+## Development Progress
 
-Potential improvements include:
-
-- Configurable profiling and validation rules
-- More advanced semantic type inference
-- Expanded edge-case testing
-- Improved anomaly detection evaluation
-- More detailed data quality visualizations
-- Docker-based deployment
-- Performance optimization for larger datasets
-- Improved data drift monitoring
-- NLP-assisted semantic classification
-- Additional reporting and export formats
-
-These are potential enhancements, not claims about features already implemented.
+| Development milestone | Work completed |
+|---|---|
+| Days 1–10 | Project setup, Python foundations, dataset exploration, and initial profiling |
+| Days 11–15 | Data cleaning and missing-value handling |
+| Days 16–20 | Data validation and validation rules |
+| Day 21 | Anomaly detection implementation |
+| Day 22 | Duplicate detection implementation |
+| Day 23 | Data drift detection |
+| Day 24 | Pipeline integration |
+| Day 25 | Command-line pipeline execution |
+| Day 26 | Logging and error handling |
+| Day 27 | Dashboard development |
+| Day 28 | Dashboard integration and improvements |
+| Day 29 | Automated testing and integration improvements |
+| Day 30 | Pipeline completion and project improvements |
+| Days 31–32 | Configurable validation and HTML quality reports |
+| Day 33 | Persistent data quality history tracking |
+| Day 34 | Historical quality comparison and regression detection |
+| Day 35 | Automated data quality recommendation engine and dashboard integration |
 
 ---
 
-## 11. Git and GitHub
+## Automated Testing
 
-**Repository:**
-https://github.com/Manolashya/automated-data-quality-system
+The project uses Pytest to verify individual components and integrated workflows.
 
-The project uses Git for version control and GitHub for source code hosting.
+Test coverage includes:
 
-Useful commands:
+- Data cleaning.
+- Data validation.
+- Dataset profiling.
+- Anomaly detection.
+- Duplicate detection.
+- Data drift detection.
+- Pipeline execution.
+- Pipeline integration.
+- Historical quality tracking.
+- Historical quality comparison.
+- Automated recommendation generation.
+
+### Latest Verified Test Result
+
+```text
+133 passed in 11.93s
+```
+
+All 133 tests passed in the latest recorded full test-suite execution.
+
+To execute the tests again:
 
 ```powershell
-git status
-git log --oneline -10
-git pull origin main
-git push origin main
+python -m pytest -q
 ```
 
-Avoid committing virtual environments, secrets, unnecessary cache files, and unrelated temporary files.
-
 ---
 
-## 12. Author
+## Day 35 — Automated Data Quality Recommendations
 
-**Mano Lashya**
+### Objective
 
-GitHub: [Manolashya](https://github.com/Manolashya)
+Develop an automated recommendation engine that converts detected data quality problems into actionable suggestions.
 
----
+### Implementation
 
-## 13. Project Summary
+Created:
 
-The Automated Data Cleaning & Validation System is a modular Python-based project that combines data profiling, cleaning, validation, missing-value imputation, anomaly detection, fuzzy duplicate detection, and data drift monitoring.
+```text
+src/recommendations/
+├── __init__.py
+└── recommendation_engine.py
+```
 
-It integrates these capabilities through a reusable pipeline, command-line interface, and interactive Streamlit dashboard.
+The recommendation engine analyzes the output of the integrated pipeline and generates recommendations for detected data quality issues.
 
-Structured logging, error handling, and automated unit and integration tests improve the reliability and maintainability of the system.
+### Recommendation Categories
 
-The latest verified milestone includes **119 passing automated tests**, demonstrating successful integration of the project's major components.
----
+1. Missing required values.
+2. Invalid data formats.
+3. Unusual records and anomalies.
+4. Potential duplicate records.
+5. Data distribution drift.
+6. Historical quality regressions.
 
-## 14. Day 33 – Data Quality History Tracking
+### Priority Classification
 
-Implemented persistent tracking of successful data quality pipeline executions.
+Each recommendation is assigned a priority:
 
-### Features
+- **High:** Important problems that require attention.
+- **Medium:** Problems that should be reviewed.
+- **Low:** Lower-priority improvements.
 
-- Stores pipeline execution history in `reports/quality_history.csv`.
-- Records execution timestamp and dataset information.
-- Tracks quality score, completeness, missing values, duplicate rows, validation issues, and anomalies.
-- Appends new execution records without overwriting previous history.
-- Displays the latest quality score and total executions in the Streamlit dashboard.
-- Visualizes historical quality scores using a trend chart.
-- Displays a table of previous pipeline executions.
+### Pipeline Integration
+
+The recommendation engine was integrated into:
+
+```text
+src/pipeline/runner.py
+```
+
+The pipeline now includes a recommendations result alongside its other data quality outputs.
+
+### Dashboard Integration
+
+The Streamlit dashboard displays:
+
+- Total recommendations.
+- High-priority recommendation count.
+- Medium-priority recommendation count.
+- Low-priority recommendation count.
+- A recommendation table.
+- Detailed recommended actions.
+
+### Example Execution Result
+
+For the project's dirty customer dataset, the recommendation engine generated:
+
+| Priority | Number of recommendations |
+|---|---:|
+| High | 2 |
+| Medium | 1 |
+| Low | 0 |
+| **Total** | **3** |
+
+The recommendations included actions for missing email values, unusual records, and invalid email formats.
 
 ### Testing
 
-- Added unit tests for history tracking.
-- Added pipeline integration tests.
-- Verified CSV creation and multiple execution records.
-- Full test suite at the end of Day 33: **111 passed**.
-## 15. Day 34 – Data Quality History Comparison
+The recommendation engine and pipeline integration were tested as part of the full test suite.
 
-Implemented comparison and improvement analysis between the latest two successful pipeline executions.
+**Latest verified result: 133 tests passed.**
 
-### Features
+### GitHub
 
-- Compares the latest and previous execution records from `reports/quality_history.csv`.
-- Measures changes in quality score and completeness.
-- Tracks changes in missing values, duplicate rows, validation issues, and anomalies.
-- Classifies each metric as improved, regressed, or unchanged.
-- Displays previous and latest quality scores in the Streamlit dashboard.
-- Shows a metric comparison table with differences and improvement status.
-- Displays an overall summary of improved, regressed, and unchanged metrics.
-- Handles missing history files, insufficient records, and invalid history data.
+Day 35 implementation commit:
 
-### Testing
+```text
+503a4d4 — Add automated data quality recommendations
+```
 
-- Added unit tests for history comparison.
-- Verified improvement, regression, unchanged metrics, and error handling.
-- Full test suite: **119 passed**.
+The implementation was pushed to the GitHub `main` branch.
+
+---
+
+## Example Dataset
+
+The project includes a customer dataset containing common data quality problems, such as:
+
+- Missing values.
+- Duplicate records.
+- Invalid email formats.
+- Invalid age values.
+- Negative numerical values.
+- Invalid phone numbers.
+- Invalid dates.
+- Inconsistent formatting.
+
+The dataset can be used to demonstrate the cleaning, validation, anomaly detection, duplicate detection, and recommendation features.
+
+---
+
+## Future Improvements
+
+Potential areas for further development include:
+
+- More advanced anomaly detection methods.
+- Additional configurable validation rules.
+- Improved data drift monitoring.
+- More detailed historical analytics and visualizations.
+- Support for additional dataset formats.
+- Automated data quality notifications.
+- Enhanced recommendation explanations.
+- Deployment as a web application.
+
+---
+
+## Project Summary
+
+The Automated Data Quality System has evolved from an initial data cleaning and validation project into an integrated data quality platform.
+
+The project currently includes:
+
+- Automated data cleaning.
+- Dataset profiling.
+- Configurable data validation.
+- Anomaly detection.
+- Fuzzy duplicate detection.
+- Data drift detection.
+- Integrated pipeline execution.
+- Command-line support.
+- Logging and error handling.
+- Interactive Streamlit dashboard.
+- HTML quality reports.
+- Historical quality tracking.
+- Historical execution comparison.
+- Automated data quality recommendations.
+- Priority-based recommendation display.
+- Automated testing.
+
+**Development milestone:** Day 35 completed.
+
+**Latest verified automated tests:** 133 passed.
+
+---
+
+## GitHub Repository
+
+Source code and project development history:
+
+[https://github.com/Manolashya/automated-data-quality-system](https://github.com/Manolashya/automated-data-quality-system)
+
+---
+
+## Author
+
+Developed as a hands-on data engineering and data quality project under the CadetX learning journey.
