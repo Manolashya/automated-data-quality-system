@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.pipeline.runner import run_pipeline
 from src.history.history_comparator import compare_quality_history
+from src.recommendations.recommendation_engine import generate_recommendations
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -780,3 +781,101 @@ try:
 except (FileNotFoundError, ValueError) as error:
 
     st.info(str(error))
+
+# ============================================================
+# 12. DATA QUALITY RECOMMENDATIONS
+# ============================================================
+
+st.header("12. Data Quality Recommendations")
+
+if "pipeline_results" not in st.session_state:
+    st.info(
+        "Run the data quality pipeline to generate recommendations."
+    )
+
+else:
+    recommendation_results = (
+        st.session_state["pipeline_results"].get(
+            "recommendations",
+            []
+        )
+    )
+
+    if not recommendation_results:
+        st.success(
+            "No data quality recommendations. "
+            "Your dataset has no detected issues requiring action."
+        )
+
+    else:
+        high_count = sum(
+            item["priority"] == "High"
+            for item in recommendation_results
+        )
+
+        medium_count = sum(
+            item["priority"] == "Medium"
+            for item in recommendation_results
+        )
+
+        low_count = sum(
+            item["priority"] == "Low"
+            for item in recommendation_results
+        )
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(
+            "Total Recommendations",
+            len(recommendation_results)
+        )
+
+        col2.metric("High Priority", high_count)
+        col3.metric("Medium Priority", medium_count)
+        col4.metric("Low Priority", low_count)
+
+        st.subheader("Recommended Actions")
+
+        recommendations_df = pd.DataFrame(
+            recommendation_results
+        )
+
+        recommendations_df = recommendations_df.rename(
+            columns={
+                "category": "Category",
+                "priority": "Priority",
+                "issue": "Issue",
+                "recommendation": "Recommended Action",
+                "affected_count": "Affected Records"
+            }
+        )
+
+        st.dataframe(
+            recommendations_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.subheader("Detailed Recommendations")
+
+        for index, item in enumerate(
+            recommendation_results,
+            start=1
+        ):
+            with st.expander(
+                f"{index}. [{item['priority']}] {item['issue']}"
+            ):
+                st.write(
+                    "**Category:**",
+                    item["category"]
+                )
+
+                st.write(
+                    "**Affected Records:**",
+                    item["affected_count"]
+                )
+
+                st.write(
+                    "**Recommended Action:**",
+                    item["recommendation"]
+                )

@@ -44,7 +44,6 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     """Test that all pipeline stages execute and return results."""
 
     results = run_pipeline(dirty_df)
-
     expected_keys = {
         "cleaned_data",
         "validation_issues",
@@ -54,6 +53,7 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
         "drift_results",
         "html_report_path",
         "history_path",
+        "recommendations",
     }
 
     assert set(results.keys()) == expected_keys
@@ -63,6 +63,7 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     assert isinstance(results["anomaly_results"], pd.DataFrame)
     assert isinstance(results["duplicate_results"], list)
     assert isinstance(results["drift_results"], list)
+    assert isinstance(results["recommendations"], list)
 
     assert results["cleaned_data"].shape == (15, 10)
     assert results["drift_results"] == []

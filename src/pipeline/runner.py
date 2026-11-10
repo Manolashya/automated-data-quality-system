@@ -9,6 +9,10 @@ from src.duplicate_detection.detect import detect_fuzzy_duplicates
 from src.data_drift.detect import detect_data_drift
 from src.reporting.html_report import generate_html_report
 from src.history.history_tracker import save_quality_history
+from src.history.history_comparator import compare_quality_history
+from src.recommendations.recommendation_engine import (
+    generate_recommendations,
+)
 from src.utils.logger import get_logger
 
 
@@ -144,6 +148,42 @@ def run_pipeline(df, reference_df=None):
             history_path
         )
 
+        # Step 9: Compare quality history when available
+        logger.info("Step 9: Comparing quality history")
+
+        history_comparison = None
+
+        try:
+            history_comparison = compare_quality_history(
+                history_path
+            )
+
+            logger.info(
+                "Step 9 completed. Historical comparison available"
+            )
+
+        except (FileNotFoundError, ValueError) as error:
+            logger.info(
+                "Step 9 skipped. Historical comparison unavailable: %s",
+                error
+            )
+
+        # Step 10: Generate data quality recommendations
+        logger.info("Step 10: Generating recommendations")
+
+        recommendations = generate_recommendations(
+            validation_issues=validation_issues,
+            anomaly_results=anomaly_results,
+            duplicate_results=duplicate_results,
+            drift_results=drift_results,
+            history_comparison=history_comparison,
+        )
+
+        logger.info(
+            "Step 10 completed. Recommendations generated: %d",
+            len(recommendations)
+        )
+
         # Collect all results
         results = {
             "cleaned_data": cleaned_df,
@@ -152,6 +192,7 @@ def run_pipeline(df, reference_df=None):
             "anomaly_results": anomaly_results,
             "duplicate_results": duplicate_results,
             "drift_results": drift_results,
+            "recommendations": recommendations,
             "html_report_path": html_report_path,
             "history_path": history_path
         }
