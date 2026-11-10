@@ -660,7 +660,7 @@ It integrates these capabilities through a reusable pipeline, command-line inter
 
 Structured logging, error handling, and automated unit and integration tests improve the reliability and maintainability of the system.
 
-The latest verified milestone includes **111 passing automated tests**, demonstrating successful integration of the project's major components.
+The latest verified milestone includes **119 passing automated tests**, demonstrating successful integration of the project's major components.
 ---
 
 ## 14. Day 33 – Data Quality History Tracking
@@ -682,4 +682,24 @@ Implemented persistent tracking of successful data quality pipeline executions.
 - Added unit tests for history tracking.
 - Added pipeline integration tests.
 - Verified CSV creation and multiple execution records.
-- Full test suite: **111 passed**.
+- Full test suite at the end of Day 33: **111 passed**.
+## 15. Day 34 – Data Quality History Comparison
+
+Implemented comparison and improvement analysis between the latest two successful pipeline executions.
+
+### Features
+
+- Compares the latest and previous execution records from `reports/quality_history.csv`.
+- Measures changes in quality score and completeness.
+- Tracks changes in missing values, duplicate rows, validation issues, and anomalies.
+- Classifies each metric as improved, regressed, or unchanged.
+- Displays previous and latest quality scores in the Streamlit dashboard.
+- Shows a metric comparison table with differences and improvement status.
+- Displays an overall summary of improved, regressed, and unchanged metrics.
+- Handles missing history files, insufficient records, and invalid history data.
+
+### Testing
+
+- Added unit tests for history comparison.
+- Verified improvement, regression, unchanged metrics, and error handling.
+- Full test suite: **119 passed**.

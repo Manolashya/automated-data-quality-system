@@ -17,6 +17,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.pipeline.runner import run_pipeline
+from src.history.history_comparator import compare_quality_history
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -665,3 +666,117 @@ else:
         st.warning(
             f"Could not load quality history: {error}"
         )
+# --------------------------------------------------
+# 11. Quality Improvement Analysis
+# --------------------------------------------------
+
+st.header("11. Quality Improvement Analysis")
+
+try:
+
+    comparison_result = compare_quality_history()
+
+    previous_execution = comparison_result["previous_execution"]
+    latest_execution = comparison_result["latest_execution"]
+    metric_comparison = comparison_result["comparison"]
+
+    st.subheader("Execution Comparison")
+
+    comparison_col1, comparison_col2 = st.columns(2)
+
+    comparison_col1.metric(
+        "Previous Quality Score",
+        f"{previous_execution['quality_score']:.2f}%"
+    )
+
+    quality_difference = metric_comparison["quality_score"]["difference"]
+
+    quality_difference = metric_comparison["quality_score"]["difference"]
+    quality_delta = (
+        f"{quality_difference:+.2f} percentage points"
+        if quality_difference != 0
+        else None
+        )
+    comparison_col2.metric(
+        "Latest Quality Score",
+        f"{latest_execution['quality_score']:.2f}%",
+        delta=quality_delta
+        )
+
+    st.subheader("Metric Improvement Analysis")
+
+    comparison_rows = []
+
+    metric_labels = {
+        "quality_score": "Quality Score",
+        "completeness": "Completeness",
+        "missing_values": "Missing Values",
+        "duplicate_rows": "Duplicate Rows",
+        "validation_issues": "Validation Issues",
+        "anomalies": "Anomalies",
+    }
+
+    for metric, values in metric_comparison.items():
+
+        comparison_rows.append({
+            "Metric": metric_labels[metric],
+            "Previous": values["previous"],
+            "Latest": values["latest"],
+            "Difference": values["difference"],
+            "Status": values["status"].capitalize(),
+        })
+
+    comparison_display = pd.DataFrame(comparison_rows)
+
+    st.dataframe(
+        comparison_display,
+        width="stretch",
+        hide_index=True
+    )
+
+    improved_count = sum(
+        values["status"] == "improved"
+        for values in metric_comparison.values()
+    )
+
+    regressed_count = sum(
+        values["status"] == "regressed"
+        for values in metric_comparison.values()
+    )
+
+    unchanged_count = sum(
+        values["status"] == "unchanged"
+        for values in metric_comparison.values()
+    )
+
+    st.subheader("Overall Improvement Summary")
+
+    summary_col1, summary_col2, summary_col3 = st.columns(3)
+
+    summary_col1.metric("Improved Metrics", improved_count)
+    summary_col2.metric("Regressed Metrics", regressed_count)
+    summary_col3.metric("Unchanged Metrics", unchanged_count)
+
+    if improved_count > 0 and regressed_count == 0:
+
+        st.success(
+            "Data quality has improved compared with the previous execution."
+        )
+
+    elif regressed_count > 0:
+
+        st.warning(
+            "Some data quality metrics have regressed. "
+            "Review the comparison table."
+        )
+
+    else:
+
+        st.info(
+            "No changes in data quality metrics compared with "
+            "the previous execution."
+        )
+
+except (FileNotFoundError, ValueError) as error:
+
+    st.info(str(error))
