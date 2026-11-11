@@ -15,7 +15,7 @@ It also maintains execution history and generates prioritized recommendations to
 ### Project Information
 
 - **Project:** CadetX — Automated Data Quality System
-- **Development milestone:** Days 1–35 completed
+- **Development milestone:** Day 40 completed
 - **Programming language:** Python
 - **Primary libraries:** Pandas, NumPy, Scikit-learn, RapidFuzz, Streamlit, Pytest
 - **Dashboard:** Streamlit
@@ -27,6 +27,7 @@ It also maintains execution history and generates prioritized recommendations to
 ## Key Features
 
 ### 1. Data Profiling
+
 - Analyze dataset structure and dimensions.
 - Generate statistical summaries.
 - Identify missing values.
@@ -35,6 +36,7 @@ It also maintains execution history and generates prioritized recommendations to
 - Generate profiling reports.
 
 ### 2. Automated Data Cleaning
+
 - Handle missing values.
 - Remove duplicate records.
 - Normalize inconsistent values.
@@ -42,6 +44,7 @@ It also maintains execution history and generates prioritized recommendations to
 - Export cleaned datasets.
 
 ### 3. Data Validation
+
 - Validate required columns.
 - Check missing values.
 - Validate email formats.
@@ -51,22 +54,26 @@ It also maintains execution history and generates prioritized recommendations to
 - Support configurable validation rules through YAML.
 
 ### 4. Anomaly Detection
+
 - Detect unusual records using Isolation Forest.
 - Identify potential outliers.
 - Add anomaly information to analysis results.
 
 ### 5. Duplicate Detection
+
 - Identify exact duplicate records.
 - Detect potential fuzzy duplicates using RapidFuzz.
 - Report similar records for further investigation.
 
 ### 6. Data Drift Detection
+
 - Compare datasets against a reference dataset.
 - Measure changes in numerical and categorical distributions.
 - Use Population Stability Index (PSI) and Total Variation Distance (TVD).
 - Generate drift analysis results.
 
 ### 7. Integrated Data Quality Pipeline
+
 - Execute multiple data quality operations through one pipeline.
 - Combine cleaning, validation, profiling, anomaly detection, duplicate detection, and drift analysis.
 - Generate quality reports.
@@ -74,18 +81,21 @@ It also maintains execution history and generates prioritized recommendations to
 - Generate automated recommendations.
 
 ### 8. Historical Quality Tracking
+
 - Store quality metrics across pipeline executions.
 - Track quality score and completeness.
 - Track missing values and duplicate records.
 - Maintain a CSV-based execution history.
 
 ### 9. Historical Quality Comparison
+
 - Compare the latest execution with the previous execution.
 - Identify quality improvements and regressions.
 - Compare multiple data quality metrics.
 - Display historical changes in the dashboard.
 
 ### 10. Automated Data Quality Recommendations
+
 - Generate recommendations based on validation issues.
 - Recommend actions for missing and invalid values.
 - Identify actions for anomalies and potential duplicates.
@@ -93,7 +103,28 @@ It also maintains execution history and generates prioritized recommendations to
 - Identify historical quality regressions.
 - Assign High, Medium, and Low priority levels.
 
-### 11. Interactive Streamlit Dashboard
+### 11. Interactive Recommendation Management
+
+- Export recommendations as CSV.
+- Filter recommendations by priority.
+- Filter recommendations by category.
+- Search recommendations using keywords.
+- Sort recommendations by priority.
+- Sort by the number of affected records.
+- Sort alphabetically by category.
+- Display an informative message when no recommendations match the selected filters.
+
+### 12. Recommendation Analytics
+
+- Display a bar chart showing the number of recommendations in each category.
+- Visualize categories such as Anomaly and Validation.
+- Dynamically update the chart according to selected priority filters.
+- Dynamically update the chart according to category filters.
+- Update chart results based on keyword searches.
+- Display a helpful message when no recommendation data is available.
+
+### 13. Interactive Streamlit Dashboard
+
 - Upload datasets.
 - View dataset information and quality metrics.
 - Run the integrated data quality pipeline.
@@ -102,8 +133,11 @@ It also maintains execution history and generates prioritized recommendations to
 - Compare historical executions.
 - View prioritized recommendations.
 - Download cleaned datasets and reports.
+- Export filtered recommendations as CSV.
+- Explore recommendation analytics.
 
-### 12. Automated Testing
+### 14. Automated Testing
+
 - Unit tests for individual modules.
 - Integration tests for pipeline functionality.
 - Tests for historical tracking and comparison.
@@ -125,10 +159,10 @@ automated-data-quality-system/
 │
 ├── data/
 │   ├── raw/
-│   │   └── dirty_customer_data.csv
+│   │   ├── dirty_customer_data.csv
+│   │   └── customer_data.csv
 │   │
 │   └── processed/
-│       └── customer_data.csv
 │
 ├── reports/
 │
@@ -163,15 +197,12 @@ automated-data-quality-system/
 │   │   ├── html_report.py
 │   │   └── templates/
 │   │       └── report_template.html
+│   │
 │   └── utils/
 │       ├── logger.py
 │       └── config_loader.py
 │
 ├── tests/
-│   ├── test_pipeline_integration.py
-│   ├── test_history_tracker.py
-│   ├── test_history_comparator.py
-│   └── test_recommendation_engine.py
 │
 ├── requirements.txt
 ├── README.md
@@ -252,8 +283,6 @@ python -m streamlit run dashboard/app.py
 The dashboard will open in your browser.
 
 ### Run the Data Quality Pipeline
-
-The project provides a pipeline runner and CLI.
 
 To view the available CLI arguments:
 
@@ -446,7 +475,63 @@ Recommendations are classified into three priority levels:
 | Medium | Issue that should be reviewed and corrected |
 | Low | Lower-priority improvement or monitoring action |
 
-The recommendation engine is integrated into the pipeline, and the dashboard displays recommendation counts, a recommendation table, and detailed actions.
+### Module 15 — Recommendation Export, Filtering, Search and Sorting
+
+Extends the recommendation dashboard with interactive recommendation management.
+
+Implemented capabilities:
+
+**CSV Export (Day 36)**
+
+- Convert recommendation results into CSV format.
+- Download recommendations using a Streamlit download button.
+- Export the recommendations currently displayed after filtering and sorting.
+
+**Interactive Filters (Day 37)**
+
+- Filter recommendations by High, Medium, or Low priority.
+- Filter by recommendation category.
+- Display an informative empty state when no results match the selected filters.
+
+**Keyword Search (Day 38)**
+
+- Search recommendation categories.
+- Search priority levels.
+- Search issue descriptions.
+- Search recommended actions.
+- Perform case-insensitive keyword matching.
+
+**Recommendation Sorting (Day 39)**
+
+Available sorting options:
+
+- Priority (High to Low).
+- Most Affected Records.
+- Least Affected Records.
+- Category (A to Z).
+
+The recommendation table, CSV export, and detailed recommendation sections use the filtered and sorted results.
+
+### Module 16 — Recommendation Category Analytics
+
+Introduces a category-based analytics chart in the Streamlit dashboard.
+
+Implemented in:
+
+```text
+dashboard/app.py
+```
+
+The feature includes:
+
+- A bar chart displaying recommendation counts by category.
+- Category-wise recommendation distribution.
+- Dynamic updates based on priority filters.
+- Dynamic updates based on category filters.
+- Dynamic updates based on keyword searches.
+- An informative message when no recommendation data is available.
+
+The chart helps users understand which categories contribute most to the detected data quality issues.
 
 ---
 
@@ -471,6 +556,11 @@ The recommendation engine is integrated into the pipeline, and the dashboard dis
 | Day 33 | Persistent data quality history tracking |
 | Day 34 | Historical quality comparison and regression detection |
 | Day 35 | Automated data quality recommendation engine and dashboard integration |
+| Day 36 | CSV export for data quality recommendations |
+| Day 37 | Interactive priority and category filters |
+| Day 38 | Keyword search for recommendations |
+| Day 39 | Recommendation sorting options |
+| Day 40 | Recommendation category analytics bar chart |
 
 ---
 
@@ -495,7 +585,7 @@ Test coverage includes:
 ### Latest Verified Test Result
 
 ```text
-133 passed in 11.93s
+133 passed in 15.04s
 ```
 
 All 133 tests passed in the latest recorded full test-suite execution.
@@ -577,12 +667,6 @@ For the project's dirty customer dataset, the recommendation engine generated:
 
 The recommendations included actions for missing email values, unusual records, and invalid email formats.
 
-### Testing
-
-The recommendation engine and pipeline integration were tested as part of the full test suite.
-
-**Latest verified result: 133 tests passed.**
-
 ### GitHub
 
 Day 35 implementation commit:
@@ -591,7 +675,159 @@ Day 35 implementation commit:
 503a4d4 — Add automated data quality recommendations
 ```
 
-The implementation was pushed to the GitHub `main` branch.
+---
+
+## Day 36 — CSV Export for Recommendations
+
+### Objective
+
+Allow users to download generated data quality recommendations for external analysis and reporting.
+
+### Implementation
+
+Added a CSV export feature to the recommendation section of the Streamlit dashboard.
+
+The implementation:
+
+- Converts recommendation data into CSV format.
+- Provides a download button.
+- Exports recommendation details.
+- Uses the currently displayed recommendation results.
+
+### GitHub
+
+```text
+7e997c6 — Add CSV export for data quality recommendations
+```
+
+---
+
+## Day 37 — Interactive Recommendation Filters
+
+### Objective
+
+Allow users to focus on recommendations based on their priority and category.
+
+### Implementation
+
+Added interactive dashboard filters for:
+
+- High, Medium, and Low priority.
+- Recommendation categories such as Validation, Anomaly, Duplicate, Drift, and Quality.
+
+The recommendation table, CSV download, and detailed recommendation sections respond to the selected filters.
+
+An informative empty-state message is displayed when no recommendations match.
+
+### GitHub
+
+```text
+0548a08 — Add interactive recommendation filters
+```
+
+---
+
+## Day 38 — Keyword Search for Recommendations
+
+### Objective
+
+Make it easier to find specific recommendations in the dashboard.
+
+### Implementation
+
+Added a case-insensitive keyword search feature.
+
+Users can search by:
+
+- Recommendation category.
+- Priority.
+- Issue description.
+- Recommended action.
+
+The keyword search works together with the priority and category filters.
+
+### GitHub
+
+```text
+a003bc7 — Add keyword search for recommendations
+```
+
+---
+
+## Day 39 — Recommendation Sorting
+
+### Objective
+
+Allow users to organize recommendations according to their importance and impact.
+
+### Implementation
+
+Added four sorting options:
+
+1. Priority (High to Low).
+2. Most Affected Records.
+3. Least Affected Records.
+4. Category (A to Z).
+
+Sorting is applied to the filtered recommendation results.
+
+The recommendation table, CSV export, and detailed recommendation sections use the selected order.
+
+### GitHub
+
+```text
+eb5c940 — Add recommendation sorting options
+```
+
+---
+
+## Day 40 — Recommendation Category Analytics Chart
+
+### Objective
+
+Provide a visual representation of the distribution of data quality recommendations across different categories.
+
+### Implementation
+
+Added a recommendation category analysis section to the Streamlit dashboard using Streamlit's bar chart functionality.
+
+The chart:
+
+- Displays recommendation counts by category.
+- Shows the distribution of categories such as Anomaly and Validation.
+- Updates according to selected priority filters.
+- Updates according to selected category filters.
+- Responds to keyword searches.
+- Displays a helpful message when no recommendation data is available.
+
+### Example Verification
+
+For the project's dirty customer dataset:
+
+| Category | Recommendation count |
+|---|---:|
+| Anomaly | 1 |
+| Validation | 2 |
+| **Total** | **3** |
+
+The chart was manually verified using category filtering and keyword search.
+
+### Testing
+
+- Python syntax compilation passed.
+- Full automated test suite: 133 passed.
+- Manual dashboard testing passed.
+- Category filter testing passed.
+- Keyword search testing passed.
+- Git whitespace check passed.
+
+### GitHub
+
+```text
+8daea98 — Add recommendation category analytics chart
+```
+
+The implementation was committed and pushed to the GitHub `main` branch.
 
 ---
 
@@ -647,10 +883,14 @@ The project currently includes:
 - Historical quality tracking.
 - Historical execution comparison.
 - Automated data quality recommendations.
-- Priority-based recommendation display.
+- CSV recommendation export.
+- Interactive recommendation filtering.
+- Keyword-based recommendation search.
+- Recommendation sorting.
+- Recommendation category analytics.
 - Automated testing.
 
-**Development milestone:** Day 35 completed.
+**Development milestone:** Day 40 completed.
 
 **Latest verified automated tests:** 133 passed.
 
