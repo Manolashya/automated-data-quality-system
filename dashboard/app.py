@@ -864,6 +864,17 @@ else:
             placeholder="Search by issue, action, or category...",
             key="recommendation_search"
         ).strip().lower()
+                # Sort recommendations
+        sort_option = st.selectbox(
+            "Sort Recommendations By",
+            options=[
+                "Priority (High to Low)",
+                "Most Affected Records",
+                "Least Affected Records",
+                "Category (A to Z)"
+            ],
+            key="recommendation_sort"
+        )
                 # Apply priority, category, and keyword filters
         filtered_recommendations = [
             item
@@ -878,6 +889,40 @@ else:
                 or search_query in str(item["recommendation"]).lower()
             )
         ]
+                # Apply selected sorting option
+        if sort_option == "Priority (High to Low)":
+            priority_order = {
+                "High": 0,
+                "Medium": 1,
+                "Low": 2
+            }
+
+            filtered_recommendations = sorted(
+                filtered_recommendations,
+                key=lambda item: priority_order.get(
+                    item["priority"],
+                    3
+                )
+            )
+
+        elif sort_option == "Most Affected Records":
+            filtered_recommendations = sorted(
+                filtered_recommendations,
+                key=lambda item: item["affected_count"],
+                reverse=True
+            )
+
+        elif sort_option == "Least Affected Records":
+            filtered_recommendations = sorted(
+                filtered_recommendations,
+                key=lambda item: item["affected_count"]
+            )
+
+        elif sort_option == "Category (A to Z)":
+            filtered_recommendations = sorted(
+                filtered_recommendations,
+                key=lambda item: item["category"].lower()
+            )
 
         st.write(
             f"Showing {len(filtered_recommendations)} "
