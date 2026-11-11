@@ -858,13 +858,25 @@ else:
                 default=available_categories,
                 key="recommendation_category_filter"
             )
-
-        # Apply selected filters
+                    # Search recommendations by keyword
+        search_query = st.text_input(
+            "Search Recommendations",
+            placeholder="Search by issue, action, or category...",
+            key="recommendation_search"
+        ).strip().lower()
+                # Apply priority, category, and keyword filters
         filtered_recommendations = [
             item
             for item in recommendation_results
             if item["priority"] in selected_priorities
             and item["category"] in selected_categories
+            and (
+                not search_query
+                or search_query in str(item["category"]).lower()
+                or search_query in str(item["priority"]).lower()
+                or search_query in str(item["issue"]).lower()
+                or search_query in str(item["recommendation"]).lower()
+            )
         ]
 
         st.write(
