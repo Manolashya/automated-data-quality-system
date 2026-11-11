@@ -849,11 +849,23 @@ else:
                 "affected_count": "Affected Records"
             }
         )
-
         st.dataframe(
             recommendations_df,
             use_container_width=True,
             hide_index=True
+        )
+
+        # Export recommendations as CSV
+        recommendations_csv = recommendations_df.to_csv(
+            index=False
+        ).encode("utf-8")
+
+        st.download_button(
+            label="Download Recommendations (CSV)",
+            data=recommendations_csv,
+            file_name="data_quality_recommendations.csv",
+            mime="text/csv",
+            key="download_recommendations"
         )
 
         st.subheader("Detailed Recommendations")
