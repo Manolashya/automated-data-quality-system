@@ -833,11 +833,52 @@ else:
         col2.metric("High Priority", high_count)
         col3.metric("Medium Priority", medium_count)
         col4.metric("Low Priority", low_count)
-
         st.subheader("Recommended Actions")
 
+        # Recommendation filters
+        filter_col1, filter_col2 = st.columns(2)
+
+        with filter_col1:
+            selected_priorities = st.multiselect(
+                "Filter by Priority",
+                options=["High", "Medium", "Low"],
+                default=["High", "Medium", "Low"],
+                key="recommendation_priority_filter"
+            )
+
+        with filter_col2:
+            available_categories = sorted({
+                item["category"]
+                for item in recommendation_results
+            })
+
+            selected_categories = st.multiselect(
+                "Filter by Category",
+                options=available_categories,
+                default=available_categories,
+                key="recommendation_category_filter"
+            )
+
+        # Apply selected filters
+        filtered_recommendations = [
+            item
+            for item in recommendation_results
+            if item["priority"] in selected_priorities
+            and item["category"] in selected_categories
+        ]
+
+        st.write(
+            f"Showing {len(filtered_recommendations)} "
+            f"of {len(recommendation_results)} recommendations"
+        )
+        if not filtered_recommendations:
+            st.info(
+                "No recommendations match the selected filters. "
+                "Try changing your priority or category selection."
+            )
+
         recommendations_df = pd.DataFrame(
-            recommendation_results
+            filtered_recommendations
         )
 
         recommendations_df = recommendations_df.rename(
@@ -869,9 +910,8 @@ else:
         )
 
         st.subheader("Detailed Recommendations")
-
         for index, item in enumerate(
-            recommendation_results,
+            filtered_recommendations,
             start=1
         ):
             with st.expander(
