@@ -923,6 +923,23 @@ else:
                 filtered_recommendations,
                 key=lambda item: item["category"].lower()
             )
+                    # Recommendation category analytics
+        st.subheader("Recommendation Category Analysis")
+
+        if filtered_recommendations:
+            category_counts = (
+                pd.DataFrame(filtered_recommendations)
+                ["category"]
+                .value_counts()
+                .sort_index()
+            )
+
+            st.bar_chart(category_counts)
+
+        else:
+            st.info(
+                "No recommendation data available for the chart."
+            )
 
         st.write(
             f"Showing {len(filtered_recommendations)} "
