@@ -610,6 +610,46 @@ else:
 
                 st.info("No valid quality history records are available.")
             else:
+                                # Dataset-wise quality comparison
+                st.subheader("Dataset Quality Comparison")
+
+                latest_dataset_history = (
+                    valid_history
+                    .sort_values("parsed_timestamp")
+                    .groupby("dataset_name", as_index=False)
+                    .tail(1)
+                    .sort_values(
+                        "quality_score",
+                        ascending=False
+                    )
+                )
+
+                comparison_columns = [
+                    "dataset_name",
+                    "quality_score",
+                    "completeness",
+                    "missing_values",
+                    "duplicate_rows",
+                    "validation_issues",
+                    "anomalies"
+                ]
+
+                comparison_df = latest_dataset_history[
+                    comparison_columns
+                ].copy()
+
+                st.bar_chart(
+                    comparison_df.set_index("dataset_name")[
+                        ["quality_score"]
+                    ],
+                    width="stretch"
+                )
+
+                st.dataframe(
+                    comparison_df,
+                    width="stretch",
+                    hide_index=True
+                )
 
                 # Filter quality history by dataset
                 dataset_options = [
