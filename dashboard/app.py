@@ -650,6 +650,25 @@ else:
                     width="stretch",
                     hide_index=True
                 )
+                                # Compare additional quality metrics
+                st.subheader("Quality Metrics Comparison")
+
+                metrics_comparison = comparison_df.set_index(
+                    "dataset_name"
+                )[
+                    [
+                        "completeness",
+                        "missing_values",
+                        "duplicate_rows",
+                        "validation_issues",
+                        "anomalies"
+                    ]
+                ]
+
+                st.bar_chart(
+                    metrics_comparison,
+                    width="stretch"
+                )
 
                 # Filter quality history by dataset
                 dataset_options = [
