@@ -836,6 +836,28 @@ try:
     summary_col1.metric("Improved Metrics", improved_count)
     summary_col2.metric("Regressed Metrics", regressed_count)
     summary_col3.metric("Unchanged Metrics", unchanged_count)
+        # Visualize improvement status
+    st.subheader("Metric Improvement Status")
+
+    improvement_status = pd.DataFrame(
+        {
+            "Metric Count": [
+                improved_count,
+                regressed_count,
+                unchanged_count
+            ]
+        },
+        index=[
+            "Improved",
+            "Regressed",
+            "Unchanged"
+        ]
+    )
+
+    st.bar_chart(
+        improvement_status,
+        width="stretch"
+    )
 
     if improved_count > 0 and regressed_count == 0:
 
