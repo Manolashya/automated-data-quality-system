@@ -609,8 +609,28 @@ else:
             if valid_history.empty:
 
                 st.info("No valid quality history records are available.")
-
             else:
+
+                # Filter quality history by dataset
+                dataset_options = [
+                    "All Datasets"
+                ] + sorted(
+                    valid_history["dataset_name"]
+                    .dropna()
+                    .unique()
+                    .tolist()
+                )
+
+                selected_dataset = st.selectbox(
+                    "Select Dataset",
+                    options=dataset_options,
+                    key="quality_history_dataset_filter"
+                )
+
+                if selected_dataset != "All Datasets":
+                    valid_history = valid_history[
+                        valid_history["dataset_name"] == selected_dataset
+                    ].copy()
 
                 # Latest execution metrics
                 latest_record = valid_history.iloc[-1]
