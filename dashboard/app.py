@@ -858,6 +858,49 @@ try:
         improvement_status,
         width="stretch"
     )
+        # Export quality improvement report
+    improvement_report = comparison_display.copy()
+
+    summary_rows = pd.DataFrame([
+        {
+            "Metric": "Improved Metrics",
+            "Previous": None,
+            "Latest": improved_count,
+            "Difference": None,
+            "Status": "Summary"
+        },
+        {
+            "Metric": "Regressed Metrics",
+            "Previous": None,
+            "Latest": regressed_count,
+            "Difference": None,
+            "Status": "Summary"
+        },
+        {
+            "Metric": "Unchanged Metrics",
+            "Previous": None,
+            "Latest": unchanged_count,
+            "Difference": None,
+            "Status": "Summary"
+        }
+    ])
+
+    improvement_report = pd.concat(
+        [improvement_report, summary_rows],
+        ignore_index=True
+    )
+
+    improvement_csv = improvement_report.to_csv(
+        index=False
+    ).encode("utf-8")
+
+    st.download_button(
+        label="Download Quality Improvement Report (CSV)",
+        data=improvement_csv,
+        file_name="quality_improvement_report.csv",
+        mime="text/csv",
+        key="download_quality_improvement_report"
+    )
 
     if improved_count > 0 and regressed_count == 0:
 
