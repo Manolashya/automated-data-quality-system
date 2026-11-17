@@ -309,7 +309,31 @@ def profile_dataframe(
         )
         if valid_scores else None
     )
+    # Explain how the overall quality score is calculated
+    included_metrics = {
+        metric: float(score)
+        for metric, score in validation_summary.items()
+        if score is not None
+    }
 
+    excluded_metrics = [
+        metric
+        for metric, score in validation_summary.items()
+        if score is None
+    ]
+
+    quality_score_explanation = {
+        "formula": "Average of all available validation metric scores",
+        "included_metrics": included_metrics,
+        "excluded_metrics": excluded_metrics,
+        "included_metric_count": len(included_metrics),
+        "excluded_metric_count": len(excluded_metrics),
+        "calculation": (
+            f"{sum(included_metrics.values())} / "
+            f"{len(included_metrics)}"
+            if included_metrics else "No available metrics"
+        ),
+    }
     # PII detection
     log("\nPII Column Detection:")
 
@@ -409,6 +433,7 @@ def profile_dataframe(
         ),
         "validation_summary": validation_summary,
         "overall_quality_score": overall_quality_score,
+        "quality_score_explanation": quality_score_explanation,
         "duplicate_rows": int(df.duplicated().sum()),
         "cardinality": {
             str(column): int(count)

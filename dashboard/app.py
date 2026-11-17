@@ -304,6 +304,72 @@ if using_default_dataset and PROFILE_REPORT.exists():
             st.write(quality_score)
 
         st.subheader("Validation Summary")
+                # Explain overall quality score
+        st.subheader("Quality Score Explanation")
+
+        explanation = report.get(
+            "quality_score_explanation", {}
+        )
+
+        if explanation:
+            st.write(
+                "**Formula:**",
+                explanation.get("formula", "Not available")
+            )
+
+            st.write(
+                "**Calculation:**",
+                explanation.get("calculation", "Not available")
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.metric(
+                    "Included Metrics",
+                    explanation.get("included_metric_count", 0)
+                )
+
+            with col2:
+                st.metric(
+                    "Excluded Metrics",
+                    explanation.get("excluded_metric_count", 0)
+                )
+
+            st.write("**Metrics included in the score:**")
+
+            included_metrics = explanation.get(
+                "included_metrics", {}
+            )
+
+            if included_metrics:
+                included_df = pd.DataFrame(
+                    list(included_metrics.items()),
+                    columns=["Metric", "Score"]
+                )
+
+                st.dataframe(
+                    included_df,
+                    width="stretch",
+                    hide_index=True
+                )
+
+            st.write("**Metrics excluded from the score:**")
+
+            excluded_metrics = explanation.get(
+                "excluded_metrics", []
+            )
+
+            if excluded_metrics:
+                st.write(excluded_metrics)
+            else:
+                st.info("No metrics were excluded.")
+
+        else:
+            st.info(
+                "Quality score explanation is not available. "
+                "Run the profiling pipeline again."
+            )
 
         validation_summary = report.get("validation_summary", {})
 

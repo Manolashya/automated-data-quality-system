@@ -70,3 +70,25 @@ def test_profiling_report_has_valid_validation_summary(profiling_report):
 
     assert len(summary) == 9
     assert all(score == 100.0 for score in summary.values())
+def test_profiling_report_has_quality_score_explanation(profiling_report):
+    explanation = profiling_report["quality_score_explanation"]
+
+    assert explanation["formula"] == (
+        "Average of all available validation metric scores"
+    )
+
+    assert explanation["included_metric_count"] == 9
+    assert explanation["excluded_metric_count"] == 0
+
+    assert explanation["included_metrics"] == (
+        profiling_report["validation_summary"]
+    )
+
+    assert explanation["excluded_metrics"] == []
+
+
+def test_quality_score_explanation_has_calculation(profiling_report):
+    explanation = profiling_report["quality_score_explanation"]
+
+    assert explanation["calculation"] == "900.0 / 9"
+    assert profiling_report["overall_quality_score"] == 100.0
