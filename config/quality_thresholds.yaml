@@ -1,0 +1,4 @@
+quality_thresholds:
+  minimum_overall_score: 80.0
+  maximum_missing_percentage: 5.0
+  maximum_duplicate_percentage: 2.0

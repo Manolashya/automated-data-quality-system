@@ -49,3 +49,11 @@ def test_empty_config_raises_error(tmp_path):
 
     with pytest.raises(ValueError, match="empty"):
         load_config(config_file)
+def test_quality_threshold_config_loads_successfully():
+    config = load_config("config/quality_thresholds.yaml")
+
+    thresholds = config["quality_thresholds"]
+
+    assert thresholds["minimum_overall_score"] == 80.0
+    assert thresholds["maximum_missing_percentage"] == 5.0
+    assert thresholds["maximum_duplicate_percentage"] == 2.0
