@@ -335,4 +335,3 @@ def test_pipeline_propagates_internal_errors(
         match="Simulated cleaning failure"
     ):
         run_pipeline(dirty_df)
-

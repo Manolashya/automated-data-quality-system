@@ -1,4 +1,4 @@
-﻿[run]
+[run]
 source = src
 patch = subprocess
 omit =
