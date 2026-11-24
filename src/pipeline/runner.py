@@ -14,12 +14,22 @@ from src.recommendations.recommendation_engine import (
     generate_recommendations,
 )
 from src.utils.logger import get_logger
+from pathlib import Path
+
+from src.alerts.quality_alerts import generate_quality_alerts
+from src.alerts.alert_history import save_alert_history
+from src.utils.config_loader import load_config
+from src.utils.threshold_validator import validate_quality_thresholds
 
 
 logger = get_logger("data_quality_pipeline")
 
 
-def run_pipeline(df, reference_df=None):
+def run_pipeline(
+    df,
+    reference_df=None,
+    dataset_name="pipeline_dataset.csv"
+):
     """
     Run the complete data quality pipeline.
 
@@ -183,6 +193,33 @@ def run_pipeline(df, reference_df=None):
             "Step 10 completed. Recommendations generated: %d",
             len(recommendations)
         )
+        # Step 11: Generate and save quality alerts
+        logger.info("Step 11: Generating quality alerts")
+
+        project_root = Path(__file__).resolve().parents[2]
+
+        threshold_config = load_config(
+            project_root / "config" / "quality_thresholds.yaml"
+        )
+
+        thresholds = validate_quality_thresholds(
+            threshold_config
+        )
+
+        alerts = generate_quality_alerts(
+            profiling_report,
+            thresholds
+        )
+
+        alert_history_path = save_alert_history(
+            alerts,
+            dataset_name
+        )
+
+        logger.info(
+            "Step 11 completed. Alerts generated: %d",
+            len(alerts)
+        )
 
         # Collect all results
         results = {
@@ -194,9 +231,10 @@ def run_pipeline(df, reference_df=None):
             "drift_results": drift_results,
             "recommendations": recommendations,
             "html_report_path": html_report_path,
-            "history_path": history_path
+            "history_path": history_path,
+            "alerts": alerts,
+            "alert_history_path": alert_history_path,
         }
-
         logger.info("Data quality pipeline completed successfully")
 
         return results

@@ -5,6 +5,8 @@ import pandas as pd
 import pytest
 
 from src.pipeline.runner import run_pipeline
+from src.history.history_comparator import compare_quality_history
+from src.alerts.alert_history import load_alert_history
 from src.history.history_tracker import DEFAULT_HISTORY_PATH
 
 
@@ -28,13 +30,19 @@ def reference_df():
 
 @pytest.fixture
 def temporary_history(monkeypatch, tmp_path):
-    """Use a temporary CSV file instead of modifying project history."""
+    """Use temporary files for quality and alert history."""
 
     history_path = tmp_path / "quality_history.csv"
+    alert_history_path = tmp_path / "quality_alert_history.csv"
 
     monkeypatch.setattr(
         "src.history.history_tracker.DEFAULT_HISTORY_PATH",
         history_path
+    )
+
+    monkeypatch.setattr(
+        "src.alerts.alert_history.DEFAULT_ALERT_HISTORY_PATH",
+        alert_history_path
     )
 
     return history_path
@@ -44,6 +52,7 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     """Test that all pipeline stages execute and return results."""
 
     results = run_pipeline(dirty_df)
+
     expected_keys = {
         "cleaned_data",
         "validation_issues",
@@ -54,6 +63,8 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
         "html_report_path",
         "history_path",
         "recommendations",
+        "alerts",
+        "alert_history_path",
     }
 
     assert set(results.keys()) == expected_keys
@@ -64,6 +75,7 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     assert isinstance(results["duplicate_results"], list)
     assert isinstance(results["drift_results"], list)
     assert isinstance(results["recommendations"], list)
+    assert isinstance(results["alerts"], list)
 
     assert results["cleaned_data"].shape == (15, 10)
     assert results["drift_results"] == []
@@ -75,6 +87,14 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     assert isinstance(results["history_path"], Path)
     assert results["history_path"].exists()
     assert results["history_path"] == temporary_history
+
+    assert isinstance(results["alert_history_path"], Path)
+    # Alert history is created only when at least one alert exists.
+    assert (
+        results["alert_history_path"].exists()
+        == bool(results["alerts"])
+        )
+    assert results["alert_history_path"].name == "quality_alert_history.csv"
 
 
 def test_pipeline_generates_html_report(dirty_df, temporary_history):
@@ -117,8 +137,6 @@ def test_cleaning_and_validation_integration(dirty_df, temporary_history):
     assert not cleaned_df.duplicated().any()
     assert isinstance(validation_issues, list)
 
-    # Missing and invalid email values should be reported,
-    # not automatically invented by the cleaning process.
     assert any(
         issue["column"] == "Email"
         for issue in validation_issues
@@ -206,6 +224,7 @@ def test_pipeline_appends_history_records(dirty_df, temporary_history):
         history["dataset_name"] == "pipeline_dataset.csv"
     )
 
+
 # ============================================================
 # Day 50: Extended End-to-End Integration Tests
 # ============================================================
@@ -213,7 +232,6 @@ def test_pipeline_appends_history_records(dirty_df, temporary_history):
 from src.alerts.quality_alerts import generate_quality_alerts
 from src.utils.config_loader import load_config
 from src.utils.threshold_validator import validate_quality_thresholds
-from src.history.history_comparator import compare_quality_history
 import src.pipeline.runner as pipeline_runner
 
 
@@ -335,3 +353,113 @@ def test_pipeline_propagates_internal_errors(
         match="Simulated cleaning failure"
     ):
         run_pipeline(dirty_df)
+
+
+# ============================================================
+# Day 51: Alert History Integration Tests
+# ============================================================
+
+def test_pipeline_persists_generated_alerts(
+    dirty_df,
+    temporary_history
+):
+    """Test that pipeline alerts are saved with the dataset name."""
+
+    results = run_pipeline(
+        dirty_df,
+        dataset_name="dirty_customer_data.csv"
+    )
+
+    saved_alerts = load_alert_history(
+        results["alert_history_path"]
+    )
+
+    assert isinstance(results["alerts"], list)
+    assert len(saved_alerts) == len(results["alerts"])
+
+    for alert in saved_alerts:
+        assert alert["dataset_name"] == "dirty_customer_data.csv"
+        assert alert["timestamp"]
+        assert alert["metric"]
+        assert alert["severity"]
+
+
+def test_pipeline_appends_alert_history_on_repeated_runs(
+    dirty_df,
+    temporary_history,
+    monkeypatch
+):
+    """Test that repeated pipeline runs append separate alert records."""
+
+    test_alert = {
+        "metric": "quality_score",
+        "actual_value": 70,
+        "threshold": 80,
+        "severity": "critical",
+        "message": "Quality score is below the configured threshold.",
+    }
+
+    # Ensure every pipeline execution generates one predictable alert.
+    monkeypatch.setattr(
+        pipeline_runner,
+        "generate_quality_alerts",
+        lambda profiling_report, thresholds: [test_alert]
+    )
+
+    first_results = run_pipeline(
+        dirty_df,
+        dataset_name="first_run.csv"
+    )
+
+    second_results = run_pipeline(
+        dirty_df,
+        dataset_name="second_run.csv"
+    )
+
+    saved_alerts = load_alert_history(
+        first_results["alert_history_path"]
+    )
+
+    assert len(first_results["alerts"]) == 1
+    assert len(second_results["alerts"]) == 1
+    assert len(saved_alerts) == 2
+
+    dataset_names = {
+        alert["dataset_name"]
+        for alert in saved_alerts
+    }
+
+    assert dataset_names == {
+        "first_run.csv",
+        "second_run.csv",
+    }
+
+    for alert in saved_alerts:
+        assert alert["timestamp"]
+        assert alert["metric"] == "quality_score"
+        assert alert["severity"] == "critical"
+    """Test that repeated pipeline runs append separate alert records."""
+
+    first_results = run_pipeline(
+        dirty_df,
+        dataset_name="first_run.csv"
+    )
+
+    run_pipeline(
+        dirty_df,
+        dataset_name="second_run.csv"
+    )
+
+    saved_alerts = load_alert_history(
+        first_results["alert_history_path"]
+    )
+
+    assert len(saved_alerts) >= 2
+
+    dataset_names = {
+        alert["dataset_name"]
+        for alert in saved_alerts
+    }
+
+    assert "first_run.csv" in dataset_names
+    assert "second_run.csv" in dataset_names

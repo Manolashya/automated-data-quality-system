@@ -20,6 +20,7 @@ from src.pipeline.runner import run_pipeline
 from src.history.history_comparator import compare_quality_history
 from src.recommendations.recommendation_engine import generate_recommendations
 from src.alerts.quality_alerts import generate_quality_alerts
+from src.alerts.alert_history import load_alert_history
 from src.utils.config_loader import load_config
 from src.utils.threshold_validator import validate_quality_thresholds
 
@@ -466,10 +467,10 @@ if st.button("Run Data Quality Pipeline", type="primary"):
         with st.spinner("Running the data quality pipeline..."):
 
             pipeline_results = run_pipeline(
-                df.copy(),
-                reference_df=reference_df
-            )
-
+    df.copy(),
+    reference_df=reference_df,
+    dataset_name=dataset_name
+)
         st.session_state["pipeline_results"] = pipeline_results
         st.session_state["pipeline_dataset_name"] = dataset_name
 
@@ -1388,3 +1389,58 @@ else:
         st.error(
             f"Could not generate quality alerts: {error}"
         )
+# ============================================================
+# 14. Quality Alert History
+# ============================================================
+
+st.header("14. Quality Alert History")
+
+st.write(
+    "View previously generated quality alerts, including "
+    "their timestamps, dataset names, severity, and messages."
+)
+
+try:
+    alert_history = load_alert_history()
+
+    if alert_history:
+        history_df = pd.DataFrame(alert_history)
+
+        # Display the newest alert records first.
+        history_df = history_df.sort_values(
+            by="timestamp",
+            ascending=False
+        )
+
+        st.metric(
+            "Total Historical Alert Records",
+            len(history_df)
+        )
+
+        st.dataframe(
+            history_df[
+                [
+                    "timestamp",
+                    "dataset_name",
+                    "metric",
+                    "actual_value",
+                    "threshold",
+                    "severity",
+                    "message",
+                ]
+            ],
+            width="stretch",
+            hide_index=True
+        )
+
+    else:
+        st.info(
+            "No historical quality alerts are available yet. "
+            "Alert records will appear here after a pipeline "
+            "execution generates quality alerts."
+        )
+
+except (OSError, ValueError, KeyError) as error:
+    st.error(
+        f"Could not load quality alert history: {error}"
+    )
