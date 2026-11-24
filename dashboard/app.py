@@ -26,6 +26,7 @@ from src.utils.threshold_validator import validate_quality_thresholds
 from src.alerts.alert_analytics import analyze_alert_history
 from src.alerts.alert_insights import generate_alert_insights
 from src.history.trend_analyzer import analyze_quality_trends
+from src.history.risk_assessor import assess_quality_risk
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -1653,3 +1654,244 @@ else:
         "No historical alert data available. "
         "Run the quality pipeline to generate alert insights."
     )
+
+
+# ---------------------------------------------------------
+# 17. AUTOMATED QUALITY RISK ASSESSMENT
+# ---------------------------------------------------------
+
+st.header("17. Automated Quality Risk Assessment")
+
+st.write(
+    "Assess current dataset quality risks using configured thresholds "
+    "and historical quality trends."
+)
+
+st.caption(
+    "This is an explainable, rule-based early-warning assessment, "
+    "not a trained machine-learning prediction."
+)
+
+risk_history_path = PROJECT_ROOT / "reports" / "quality_history.csv"
+
+if not risk_history_path.exists():
+
+    st.info(
+        "No quality history is available. Run the quality pipeline "
+        "to generate records before assessing risk."
+    )
+
+else:
+
+    try:
+        risk_history = pd.read_csv(risk_history_path)
+
+        required_risk_columns = [
+            "timestamp",
+            "dataset_name",
+            "rows",
+            "columns",
+            "quality_score",
+            "missing_values",
+            "duplicate_rows",
+        ]
+
+        missing_risk_columns = [
+            column
+            for column in required_risk_columns
+            if column not in risk_history.columns
+        ]
+
+        if missing_risk_columns:
+            st.warning(
+                f"Quality history is missing required columns: "
+                f"{missing_risk_columns}"
+            )
+
+        elif risk_history.empty:
+            st.info("The quality history file contains no records.")
+
+        else:
+            risk_history["parsed_timestamp"] = pd.to_datetime(
+                risk_history["timestamp"],
+                errors="coerce",
+                utc=True
+            )
+
+            risk_history["quality_score"] = pd.to_numeric(
+                risk_history["quality_score"],
+                errors="coerce"
+            )
+
+            valid_risk_history = risk_history.dropna(
+                subset=["parsed_timestamp", "quality_score", "dataset_name"]
+            ).sort_values("parsed_timestamp")
+
+            if valid_risk_history.empty:
+                st.info("No valid quality history records are available.")
+
+            else:
+                # Reuse the dataset selected in Section 10.
+                chosen_risk_dataset = st.session_state.get(
+                    "quality_history_dataset_filter",
+                    "All Datasets"
+                )
+
+                available_risk_datasets = (
+                    valid_risk_history["dataset_name"]
+                    .dropna()
+                    .astype(str)
+                    .unique()
+                    .tolist()
+                )
+
+                if chosen_risk_dataset not in available_risk_datasets:
+                    chosen_risk_dataset = "All Datasets"
+
+                if chosen_risk_dataset == "All Datasets":
+                    risk_dataset = valid_risk_history.iloc[-1][
+                        "dataset_name"
+                    ]
+                else:
+                    risk_dataset = chosen_risk_dataset
+
+                dataset_risk_history = valid_risk_history[
+                    valid_risk_history["dataset_name"] == risk_dataset
+                ].copy()
+
+                latest_risk_record = dataset_risk_history.iloc[-1]
+
+                # Build the profiling summary from the matching
+                # dataset's latest historical execution.
+                risk_profiling_report = {
+                    "file_name": str(risk_dataset),
+                    "rows": int(latest_risk_record["rows"]),
+                    "column_count": int(latest_risk_record["columns"]),
+                    "overall_quality_score": float(
+                        latest_risk_record["quality_score"]
+                    ),
+                    "missing_values": int(
+                        pd.to_numeric(
+                            latest_risk_record["missing_values"],
+                            errors="coerce"
+                        )
+                    ),
+                    "duplicate_rows": int(
+                        pd.to_numeric(
+                            latest_risk_record["duplicate_rows"],
+                            errors="coerce"
+                        )
+                    ),
+                }
+
+                # Load the same configured thresholds used by
+                # the existing quality alert system.
+                risk_threshold_config = load_config(
+                    PROJECT_ROOT / "config" / "quality_thresholds.yaml"
+                )
+
+                risk_thresholds = validate_quality_thresholds(
+                    risk_threshold_config
+                )
+
+                risk_result = assess_quality_risk(
+                    profiling_report=risk_profiling_report,
+                    history=dataset_risk_history,
+                    thresholds=risk_thresholds,
+                    dataset_name=str(risk_dataset),
+                )
+
+                st.subheader("Current Risk Assessment")
+
+                st.caption(f"Dataset assessed: {risk_result['dataset_name']}")
+
+                risk_col1, risk_col2, risk_col3 = st.columns(3)
+
+                risk_col1.metric(
+                    "Risk Score",
+                    f"{risk_result['risk_score']:.2f} / 100"
+                )
+
+                risk_col2.metric(
+                    "Risk Level",
+                    risk_result["risk_level"]
+                )
+
+                risk_col3.metric(
+                    "Quality Trend",
+                    risk_result["trend"]
+                )
+
+                st.progress(
+                    risk_result["risk_score"] / 100
+                )
+
+                if risk_result["risk_level"] == "Critical":
+                    st.error("Critical quality risk detected.")
+
+                elif risk_result["risk_level"] == "High":
+                    st.error("High quality risk detected.")
+
+                elif risk_result["risk_level"] == "Medium":
+                    st.warning("Moderate quality risk detected.")
+
+                else:
+                    st.success("Low quality risk detected.")
+
+                st.subheader("Risk Indicators")
+
+                indicator_col1, indicator_col2 = st.columns(2)
+
+                indicator_col1.metric(
+                    "Missing Values",
+                    f"{risk_result['missing_percentage']:.2f}%"
+                )
+
+                indicator_col2.metric(
+                    "Duplicate Rows",
+                    f"{risk_result['duplicate_percentage']:.2f}%"
+                )
+
+                st.subheader("Risk Contributing Factors")
+
+                if risk_result["factors"]:
+                    factors_df = pd.DataFrame(
+                        risk_result["factors"]
+                    )
+
+                    st.dataframe(
+                        factors_df,
+                        width="stretch",
+                        hide_index=True
+                    )
+                else:
+                    st.info("No risk-contributing factors were detected.")
+
+                st.subheader("Early Warnings")
+
+                for warning in risk_result["warnings"]:
+                    st.warning(warning)
+
+                st.subheader("Recommended Actions")
+
+                for index, recommendation in enumerate(
+                    risk_result["recommendations"],
+                    start=1
+                ):
+                    st.write(f"{index}. {recommendation}")
+
+                st.caption(
+                    f"Historical executions analyzed: "
+                    f"{len(dataset_risk_history)}"
+                )
+
+    except (
+        OSError,
+        ValueError,
+        TypeError,
+        KeyError,
+        ZeroDivisionError,
+    ) as error:
+        st.error(
+            f"Could not complete the quality risk assessment: {error}"
+        )
