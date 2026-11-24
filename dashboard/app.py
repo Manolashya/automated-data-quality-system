@@ -25,6 +25,7 @@ from src.utils.config_loader import load_config
 from src.utils.threshold_validator import validate_quality_thresholds
 from src.alerts.alert_analytics import analyze_alert_history
 from src.alerts.alert_insights import generate_alert_insights
+from src.history.trend_analyzer import analyze_quality_trends
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -795,6 +796,101 @@ else:
                 st.line_chart(
                     quality_trend,
                     width="stretch"
+                )
+                                # Automated Quality Trend Analysis
+                st.subheader("Automated Quality Trend Analysis")
+
+                # Analyze one dataset at a time
+                trend_dataset = (
+                    selected_dataset
+                    if selected_dataset != "All Datasets"
+                    else latest_record["dataset_name"]
+                )
+
+                trend_result = analyze_quality_trends(
+                    valid_history,
+                    dataset_name=trend_dataset
+                )
+
+                st.caption(
+                    f"Trend analysis for: {trend_dataset}"
+                )
+
+                trend_col1, trend_col2, trend_col3 = st.columns(3)
+
+                trend_col1.metric(
+                    "Quality Trend",
+                    trend_result["trend"]
+                )
+
+                trend_col2.metric(
+                    "Latest Score",
+                    (
+                        f"{trend_result['latest_score']:.2f}%"
+                        if trend_result["latest_score"] is not None
+                        else "N/A"
+                    )
+                )
+
+                trend_col3.metric(
+                    "Change vs Previous",
+                    (
+                        f"{trend_result['score_change']:+.2f}%"
+                        if trend_result["score_change"] is not None
+                        else "N/A"
+                    )
+                )
+
+                # Display trend status
+                if trend_result["trend"] == "Improving":
+                    st.success(
+                        "Quality is improving compared with the previous execution."
+                    )
+
+                elif trend_result["trend"] == "Declining":
+                    st.error(
+                        "Quality is declining. Investigate the recent quality issues."
+                    )
+
+                elif trend_result["trend"] == "Stable":
+                    st.info(
+                        "Quality is stable compared with the previous execution."
+                    )
+
+                else:
+                    st.info(
+                        "More executions are needed to determine a quality trend."
+                    )
+
+                # Display recurring quality problems
+                st.markdown("**Recurring Quality Problems**")
+
+                issue_labels = {
+                    "missing_values": "Missing Values",
+                    "duplicate_rows": "Duplicate Rows",
+                    "validation_issues": "Validation Issues",
+                    "anomalies": "Anomalies"
+                }
+
+                if trend_result["recurring_issues"]:
+                    for issue in trend_result["recurring_issues"]:
+                        st.warning(
+                            f"Recurring issue: {issue_labels.get(issue, issue)}"
+                        )
+                else:
+                    st.success(
+                        "No recurring quality problems detected."
+                    )
+
+                # Display automated trend warnings
+                if trend_result["warnings"]:
+                    st.markdown("**Trend Monitoring Warnings**")
+
+                    for warning in trend_result["warnings"]:
+                        st.write(f"- {warning}")
+
+                st.caption(
+                    f"Executions analyzed: {trend_result['execution_count']}"
                 )
 
                 # Complete execution history
