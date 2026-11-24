@@ -19,6 +19,9 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.pipeline.runner import run_pipeline
 from src.history.history_comparator import compare_quality_history
 from src.recommendations.recommendation_engine import generate_recommendations
+from src.alerts.quality_alerts import generate_quality_alerts
+from src.utils.config_loader import load_config
+from src.utils.threshold_validator import validate_quality_thresholds
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -1215,3 +1218,173 @@ else:
                     "**Recommended Action:**",
                     item["recommendation"]
                 )
+
+# ============================================================
+# 13. Automated Quality Alerts
+# ============================================================
+
+st.header("13. Automated Quality Alerts")
+
+st.write(
+    "Monitor dataset quality against configured thresholds "
+    "and identify critical issues and warnings automatically."
+)
+
+alert_report = None
+alert_source = None
+
+# Prefer the latest pipeline report for the selected dataset.
+if (
+    "pipeline_results" in st.session_state
+    and st.session_state.get("pipeline_dataset_name") == dataset_name
+):
+    alert_report = st.session_state["pipeline_results"].get(
+        "profiling_report"
+    )
+    alert_source = "Latest pipeline execution"
+
+# Otherwise, use the saved report for the default dataset.
+elif using_default_dataset and PROFILE_REPORT.exists():
+    try:
+        with open(PROFILE_REPORT, "r", encoding="utf-8") as file:
+            alert_report = json.load(file)
+
+        alert_source = "Saved project profiling report"
+
+    except (OSError, json.JSONDecodeError) as error:
+        st.error(f"Could not load the profiling report: {error}")
+
+if alert_report is None:
+    st.info(
+        "No profiling report is available for the selected dataset. "
+        "Run the Integrated Data Quality Pipeline to generate "
+        "quality alerts."
+    )
+
+elif not isinstance(alert_report, dict):
+    st.error("The profiling report has an invalid format.")
+
+else:
+    try:
+        # Load and validate configured quality thresholds.
+        threshold_config = load_config(
+            PROJECT_ROOT / "config" / "quality_thresholds.yaml"
+        )
+
+        thresholds = validate_quality_thresholds(
+            threshold_config
+        )
+
+        # Generate alerts using the existing alert engine.
+        alerts = generate_quality_alerts(
+            alert_report,
+            thresholds
+        )
+
+        st.caption(f"Alert source: {alert_source}")
+
+        # Display configured limits.
+        st.subheader("Configured Quality Thresholds")
+
+        threshold_col1, threshold_col2, threshold_col3 = (
+            st.columns(3)
+        )
+
+        threshold_col1.metric(
+            "Minimum Quality Score",
+            f"{thresholds['minimum_overall_score']:.2f}%"
+        )
+
+        threshold_col2.metric(
+            "Maximum Missing Values",
+            f"{thresholds['maximum_missing_percentage']:.2f}%"
+        )
+
+        threshold_col3.metric(
+            "Maximum Duplicate Rows",
+            f"{thresholds['maximum_duplicate_percentage']:.2f}%"
+        )
+
+        # Display alert summary.
+        st.subheader("Alert Summary")
+
+        critical_count = sum(
+            alert["severity"] == "Critical"
+            for alert in alerts
+        )
+
+        warning_count = sum(
+            alert["severity"] == "Warning"
+            for alert in alerts
+        )
+
+        total_alerts = len(alerts)
+
+        summary_col1, summary_col2, summary_col3 = (
+            st.columns(3)
+        )
+
+        summary_col1.metric(
+            "Total Alerts",
+            total_alerts
+        )
+
+        summary_col2.metric(
+            "Critical Alerts",
+            critical_count
+        )
+
+        summary_col3.metric(
+            "Warning Alerts",
+            warning_count
+        )
+
+        # Display detailed alerts.
+        st.subheader("Alert Details")
+
+        if alerts:
+            alert_df = pd.DataFrame(alerts)
+
+            st.dataframe(
+                alert_df[
+                    [
+                        "metric",
+                        "actual_value",
+                        "threshold",
+                        "severity",
+                        "message",
+                    ]
+                ],
+                width="stretch",
+                hide_index=True
+            )
+
+            for alert in alerts:
+                alert_message = (
+                    f"**{alert['metric']}** — "
+                    f"Actual: {alert['actual_value']} | "
+                    f"Threshold: {alert['threshold']}"
+                )
+
+                if alert["severity"] == "Critical":
+                    st.error(
+                        f"{alert_message}\n\n"
+                        f"{alert['message']}"
+                    )
+
+                else:
+                    st.warning(
+                        f"{alert_message}\n\n"
+                        f"{alert['message']}"
+                    )
+
+        else:
+            st.success(
+                "No quality alerts detected! "
+                "All monitored metrics meet the configured thresholds."
+            )
+
+    except (ValueError, KeyError, TypeError, OSError) as error:
+        st.error(
+            f"Could not generate quality alerts: {error}"
+        )
