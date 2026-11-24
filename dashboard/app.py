@@ -24,6 +24,7 @@ from src.alerts.alert_history import load_alert_history
 from src.utils.config_loader import load_config
 from src.utils.threshold_validator import validate_quality_thresholds
 from src.alerts.alert_analytics import analyze_alert_history
+from src.alerts.alert_insights import generate_alert_insights
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -1517,3 +1518,42 @@ if alert_history:
 
 else:
     st.info("No historical alert data available for analytics.")
+
+# ---------------------------------------------------------
+# 16. QUALITY ALERT INSIGHTS & RECOMMENDATIONS
+# ---------------------------------------------------------
+
+st.header("Quality Alert Insights & Recommendations")
+
+alert_history = load_alert_history()
+
+if alert_history:
+    insights = generate_alert_insights(alert_history)
+
+    if insights:
+        for insight in insights:
+            with st.container(border=True):
+                st.subheader(insight["title"])
+
+                priority = insight["priority"]
+
+                if priority == "High":
+                    st.error(f"Priority: {priority}")
+                elif priority == "Medium":
+                    st.warning(f"Priority: {priority}")
+                else:
+                    st.info(f"Priority: {priority}")
+
+                st.write("**Finding:**")
+                st.write(insight["finding"])
+
+                st.write("**Recommended Action:**")
+                st.write(insight["recommendation"])
+    else:
+        st.success("No significant alert insights found.")
+
+else:
+    st.info(
+        "No historical alert data available. "
+        "Run the quality pipeline to generate alert insights."
+    )
