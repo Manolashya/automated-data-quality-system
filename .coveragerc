@@ -1,5 +1,6 @@
-[run]
+﻿[run]
 source = src
 patch = subprocess
 omit =
     src/profiling/profile_backup.py
+    src/validation/rules_backup.py

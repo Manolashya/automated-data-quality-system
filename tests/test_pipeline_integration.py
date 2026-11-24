@@ -205,3 +205,134 @@ def test_pipeline_appends_history_records(dirty_df, temporary_history):
     assert all(
         history["dataset_name"] == "pipeline_dataset.csv"
     )
+
+# ============================================================
+# Day 50: Extended End-to-End Integration Tests
+# ============================================================
+
+from src.alerts.quality_alerts import generate_quality_alerts
+from src.utils.config_loader import load_config
+from src.utils.threshold_validator import validate_quality_thresholds
+from src.history.history_comparator import compare_quality_history
+import src.pipeline.runner as pipeline_runner
+
+
+def test_profiling_report_integrates_with_quality_alerts(
+    dirty_df,
+    temporary_history
+):
+    """Test that pipeline profiling results work with the alert engine."""
+
+    results = run_pipeline(dirty_df)
+
+    report = results["profiling_report"]
+
+    threshold_config = load_config(
+        PROJECT_ROOT / "config" / "quality_thresholds.yaml"
+    )
+
+    thresholds = validate_quality_thresholds(threshold_config)
+
+    alerts = generate_quality_alerts(report, thresholds)
+
+    assert isinstance(report, dict)
+    assert "overall_quality_score" in report
+    assert "missing_values" in report
+    assert "duplicate_rows" in report
+
+    assert isinstance(alerts, list)
+
+    for alert in alerts:
+        assert {
+            "metric",
+            "actual_value",
+            "threshold",
+            "severity",
+            "message",
+        }.issubset(alert.keys())
+
+
+def test_pipeline_recommendations_have_valid_structure(
+    dirty_df,
+    temporary_history
+):
+    """Test the structure of recommendations from a real pipeline run."""
+
+    results = run_pipeline(dirty_df)
+
+    recommendations = results["recommendations"]
+
+    assert isinstance(recommendations, list)
+
+    for recommendation in recommendations:
+        assert {
+            "category",
+            "priority",
+            "issue",
+            "recommendation",
+            "affected_count",
+        }.issubset(recommendation.keys())
+
+        assert recommendation["priority"] in [
+            "High",
+            "Medium",
+            "Low",
+        ]
+
+        assert isinstance(
+            recommendation["affected_count"],
+            int
+        )
+
+
+def test_pipeline_history_comparison_integration(
+    dirty_df,
+    temporary_history
+):
+    """Test that repeated pipeline runs produce comparable history."""
+
+    run_pipeline(dirty_df)
+    run_pipeline(dirty_df)
+
+    comparison = compare_quality_history(temporary_history)
+
+    assert isinstance(comparison, dict)
+
+    assert "previous_execution" in comparison
+    assert "latest_execution" in comparison
+    assert "comparison" in comparison
+
+    assert isinstance(comparison["comparison"], dict)
+
+    assert {
+        "quality_score",
+        "completeness",
+        "missing_values",
+        "duplicate_rows",
+        "validation_issues",
+        "anomalies",
+    }.issubset(comparison["comparison"].keys())
+
+
+def test_pipeline_propagates_internal_errors(
+    dirty_df,
+    temporary_history,
+    monkeypatch
+):
+    """Test that unexpected pipeline errors are propagated."""
+
+    def raise_cleaning_error(df):
+        raise RuntimeError("Simulated cleaning failure")
+
+    monkeypatch.setattr(
+        pipeline_runner,
+        "clean_dataframe",
+        raise_cleaning_error
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="Simulated cleaning failure"
+    ):
+        run_pipeline(dirty_df)
+
