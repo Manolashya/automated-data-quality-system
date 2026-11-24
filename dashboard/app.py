@@ -23,6 +23,7 @@ from src.alerts.quality_alerts import generate_quality_alerts
 from src.alerts.alert_history import load_alert_history
 from src.utils.config_loader import load_config
 from src.utils.threshold_validator import validate_quality_thresholds
+from src.alerts.alert_analytics import analyze_alert_history
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -1444,3 +1445,75 @@ except (OSError, ValueError, KeyError) as error:
     st.error(
         f"Could not load quality alert history: {error}"
     )
+# ---------------------------------------------------------
+# 15. HISTORICAL ALERT ANALYTICS
+# ---------------------------------------------------------
+
+st.header("Historical Alert Analytics")
+
+alert_history = load_alert_history()
+
+if alert_history:
+    analytics = analyze_alert_history(alert_history)
+
+    # Total alerts
+    st.metric(
+        "Total Historical Alerts",
+        analytics["total_alerts"]
+    )
+
+    # Severity analysis
+    st.subheader("Alert Severity Analysis")
+
+    severity_data = pd.DataFrame.from_dict(
+        analytics["severity_counts"],
+        orient="index",
+        columns=["Alerts"]
+    )
+
+    st.bar_chart(severity_data)
+
+    # Metric analysis
+    st.subheader("Most Frequently Affected Metrics")
+
+    metric_data = pd.DataFrame.from_dict(
+        analytics["metric_counts"],
+        orient="index",
+        columns=["Alerts"]
+    )
+
+    st.bar_chart(metric_data)
+
+    # Dataset analysis
+    st.subheader("Datasets with Most Alerts")
+
+    dataset_data = pd.DataFrame.from_dict(
+        analytics["dataset_counts"],
+        orient="index",
+        columns=["Alerts"]
+    )
+
+    st.bar_chart(dataset_data)
+
+    # Daily alert trends
+    st.subheader("Daily Alert Trends")
+
+    daily_counts = {
+        date: count
+        for date, count in analytics["daily_counts"].items()
+        if date != "Unknown"
+    }
+
+    if daily_counts:
+        daily_data = pd.DataFrame.from_dict(
+            daily_counts,
+            orient="index",
+            columns=["Alerts"]
+        )
+
+        st.line_chart(daily_data)
+    else:
+        st.info("No valid dates available for daily trend analysis.")
+
+else:
+    st.info("No historical alert data available for analytics.")
