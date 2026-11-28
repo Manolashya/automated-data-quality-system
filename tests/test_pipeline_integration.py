@@ -51,6 +51,13 @@ def temporary_history(monkeypatch, tmp_path):
         risk_history_path
     )
 
+    mitigation_path = tmp_path / "mitigation_actions.csv"
+
+    monkeypatch.setattr(
+        "src.history.mitigation_tracker.DEFAULT_MITIGATION_PATH",
+        mitigation_path
+    )
+
     return history_path
 
 
@@ -73,6 +80,8 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
         "alert_history_path",
         "risk_result",
         "risk_history_path",
+        "mitigation_actions",
+        "mitigation_actions_path",
     }
 
     assert set(results.keys()) == expected_keys
@@ -84,6 +93,10 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
     assert isinstance(results["drift_results"], list)
     assert isinstance(results["recommendations"], list)
     assert isinstance(results["alerts"], list)
+    assert isinstance(results["mitigation_actions"], pd.DataFrame)
+    assert isinstance(results["mitigation_actions_path"], Path)
+    assert results["mitigation_actions_path"].exists()
+    assert results["mitigation_actions_path"].name == "mitigation_actions.csv"
 
     assert results["cleaned_data"].shape == (15, 10)
     assert results["drift_results"] == []
@@ -532,3 +545,70 @@ def test_pipeline_appends_risk_history_on_repeated_runs(
         risk_history["dataset_name"]
         == first_results["profiling_report"]["file_name"]
     )
+
+
+# ============================================================
+# DAY 58: RISK MITIGATION ACTION TRACKING
+# ============================================================
+
+def test_pipeline_generates_mitigation_actions(
+    dirty_df,
+    temporary_history
+):
+    """Test that pipeline risk recommendations create saved tasks."""
+
+    from src.history.mitigation_tracker import load_mitigation_actions
+
+    results = run_pipeline(dirty_df)
+
+    actions = load_mitigation_actions(
+        results["mitigation_actions_path"]
+    )
+
+    assert not actions.empty
+    assert len(actions) >= len(results["mitigation_actions"])
+    assert set(actions["status"]) == {"Pending"}
+    assert set(actions["dataset_name"]) == {
+        results["risk_result"]["dataset_name"]
+    }
+    assert set(actions["risk_level"]) == {
+        results["risk_result"]["risk_level"]
+    }
+
+
+def test_pipeline_does_not_duplicate_open_mitigation_actions(
+    dirty_df,
+    temporary_history
+):
+    """Test that repeated runs do not duplicate open mitigation tasks."""
+
+    from src.history.mitigation_tracker import load_mitigation_actions
+
+    first_results = run_pipeline(dirty_df)
+    second_results = run_pipeline(dirty_df)
+
+    first_actions = first_results["mitigation_actions"]
+    second_actions = second_results["mitigation_actions"]
+
+    saved_actions = load_mitigation_actions(
+        second_results["mitigation_actions_path"]
+    )
+
+    assert not first_actions.empty
+
+    # New recommendations may appear when quality history changes.
+    # However, the same dataset/recommendation pair must not be duplicated.
+    assert len(saved_actions) == (
+        len(first_actions) + len(second_actions)
+    )
+
+    assert not saved_actions.duplicated(
+        subset=["dataset_name", "recommendation"]
+    ).any()
+
+    assert not saved_actions["action_id"].duplicated().any()
+
+    first_recommendations = set(first_actions["recommendation"])
+    second_recommendations = set(second_actions["recommendation"])
+
+    assert first_recommendations.isdisjoint(second_recommendations)

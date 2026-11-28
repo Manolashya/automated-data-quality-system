@@ -11,6 +11,7 @@ from src.reporting.html_report import generate_html_report
 from src.history.history_tracker import save_quality_history
 from src.history.risk_assessor import assess_quality_risk
 from src.history.risk_history import save_risk_history
+import src.history.mitigation_tracker as mitigation_tracker
 from src.history.history_comparator import compare_quality_history
 from src.recommendations.recommendation_engine import (
     generate_recommendations,
@@ -237,6 +238,21 @@ def run_pipeline(
 
         risk_history_path = save_risk_history(risk_result)
 
+        # Step 13: Generate and save risk mitigation actions
+        logger.info("Step 13: Generating mitigation actions")
+
+        mitigation_actions = (
+            mitigation_tracker.generate_mitigation_actions(risk_result)
+        )
+        mitigation_actions_path = (
+            mitigation_tracker.DEFAULT_MITIGATION_PATH
+        )
+
+        logger.info(
+            "Step 13 completed. New mitigation actions: %d",
+            len(mitigation_actions),
+        )
+
         logger.info(
             "Step 12 completed. Risk score: %.2f (%s)",
             risk_result["risk_score"],
@@ -258,6 +274,8 @@ def run_pipeline(
             "alert_history_path": alert_history_path,
             "risk_result": risk_result,
             "risk_history_path": risk_history_path,
+            "mitigation_actions": mitigation_actions,
+            "mitigation_actions_path": mitigation_actions_path,
         }
         logger.info("Data quality pipeline completed successfully")
 

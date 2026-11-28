@@ -31,6 +31,13 @@ from src.history.risk_history import load_risk_history
 from src.history.risk_trend_analyzer import analyze_risk_trends
 from src.history.risk_comparator import compare_dataset_risks
 
+from src.history.mitigation_tracker import (
+    load_mitigation_actions,
+    update_mitigation_status,
+    VALID_STATUSES,
+)
+
+
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
 
@@ -2215,4 +2222,147 @@ except (
 ) as error:
     st.error(
         f"Could not compare dataset risks: {error}"
+    )
+
+
+# --------------------------------------------------
+# 20. Risk Mitigation Action Tracking
+# --------------------------------------------------
+
+st.header("20. Risk Mitigation Action Tracking")
+
+try:
+    mitigation_actions = load_mitigation_actions()
+
+    if mitigation_actions.empty:
+        st.info(
+            "No mitigation actions are available yet. "
+            "Run the data quality pipeline to generate mitigation tasks."
+        )
+
+    else:
+        st.write(
+            "Track recommended actions generated from risk assessments. "
+            "Update each task as work progresses."
+        )
+
+        total_actions = len(mitigation_actions)
+
+        pending_count = int(
+            (mitigation_actions["status"] == "Pending").sum()
+        )
+
+        in_progress_count = int(
+            (mitigation_actions["status"] == "In Progress").sum()
+        )
+
+        completed_count = int(
+            (mitigation_actions["status"] == "Completed").sum()
+        )
+
+        metric_col1, metric_col2, metric_col3, metric_col4 = (
+            st.columns(4)
+        )
+
+        metric_col1.metric("Total Actions", total_actions)
+        metric_col2.metric("Pending", pending_count)
+        metric_col3.metric("In Progress", in_progress_count)
+        metric_col4.metric("Completed", completed_count)
+
+        completion_percentage = completed_count / total_actions
+
+        st.subheader("Mitigation Completion Progress")
+
+        st.progress(completion_percentage)
+
+        st.caption(
+            f"{completed_count} of {total_actions} actions completed "
+            f"({completion_percentage * 100:.1f}%)"
+        )
+
+        st.subheader("Saved Mitigation Tasks")
+
+        display_columns = [
+            "dataset_name",
+            "risk_level",
+            "priority",
+            "recommendation",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+        st.dataframe(
+            mitigation_actions[display_columns],
+            width="stretch",
+            hide_index=True,
+        )
+
+        st.subheader("Update Mitigation Task Status")
+
+        action_options = (
+            mitigation_actions["action_id"].astype(str).tolist()
+        )
+
+        action_labels = {}
+
+        for _, action in mitigation_actions.iterrows():
+            action_id = str(action["action_id"])
+
+            action_labels[action_id] = (
+                f"{action['dataset_name']} | "
+                f"{action['priority']} | "
+                f"{str(action['recommendation'])[:70]}"
+            )
+
+        selected_action_id = st.selectbox(
+            "Select a mitigation task",
+            options=action_options,
+            format_func=action_labels.get,
+            key="mitigation_action_selector",
+        )
+
+        selected_action = mitigation_actions[
+            mitigation_actions["action_id"].astype(str)
+            == selected_action_id
+        ].iloc[0]
+
+        current_status = str(selected_action["status"])
+
+        if current_status not in VALID_STATUSES:
+            st.error(
+                f"Invalid saved status: {current_status}"
+            )
+        else:
+            new_status = st.selectbox(
+                "Select the new status",
+                options=VALID_STATUSES,
+                index=VALID_STATUSES.index(current_status),
+                key="mitigation_status_selector",
+            )
+
+            if st.button(
+                "Update Mitigation Status",
+                key="update_mitigation_status",
+            ):
+                update_mitigation_status(
+                    action_id=selected_action_id,
+                    status=new_status,
+                )
+
+                st.success(
+                    f"Task status updated to: {new_status}"
+                )
+
+                st.rerun()
+
+except (
+    OSError,
+    ValueError,
+    TypeError,
+    KeyError,
+    IndexError,
+) as error:
+    st.error(
+        f"Could not load or update mitigation actions: {error}"
     )
