@@ -27,6 +27,8 @@ from src.alerts.alert_analytics import analyze_alert_history
 from src.alerts.alert_insights import generate_alert_insights
 from src.history.trend_analyzer import analyze_quality_trends
 from src.history.risk_assessor import assess_quality_risk
+from src.history.risk_history import load_risk_history
+from src.history.risk_trend_analyzer import analyze_risk_trends
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -1895,3 +1897,206 @@ else:
         st.error(
             f"Could not complete the quality risk assessment: {error}"
         )
+
+
+# ---------------------------------------------------------
+# 18. RISK HISTORY AND TREND ANALYSIS
+# ---------------------------------------------------------
+
+st.header("18. Risk History and Trend Analysis")
+
+try:
+    saved_risk_history = load_risk_history()
+
+    if saved_risk_history.empty:
+        st.info(
+            "No saved risk history is available yet. "
+            "Run the data quality pipeline to create risk history records."
+        )
+
+    else:
+        required_columns = [
+            "timestamp",
+            "dataset_name",
+            "risk_score",
+        ]
+
+        missing_columns = [
+            column
+            for column in required_columns
+            if column not in saved_risk_history.columns
+        ]
+
+        if missing_columns:
+            raise ValueError(
+                f"Risk history is missing required columns: {missing_columns}"
+            )
+
+        risk_history_data = saved_risk_history.copy()
+
+        risk_history_data["parsed_timestamp"] = pd.to_datetime(
+            risk_history_data["timestamp"],
+            errors="coerce",
+            utc=True
+        )
+
+        risk_history_data["risk_score"] = pd.to_numeric(
+            risk_history_data["risk_score"],
+            errors="coerce"
+        )
+
+        risk_history_data = risk_history_data.dropna(
+            subset=["parsed_timestamp", "risk_score", "dataset_name"]
+        )
+
+        risk_history_data = risk_history_data[
+            risk_history_data["risk_score"].between(0, 100)
+        ].sort_values("parsed_timestamp")
+
+        if risk_history_data.empty:
+            st.info("No valid risk history records were found.")
+
+        else:
+            selected_dataset = st.session_state.get(
+                "quality_history_dataset_filter",
+                "All Datasets"
+            )
+
+            available_datasets = (
+                risk_history_data["dataset_name"]
+                .astype(str)
+                .unique()
+                .tolist()
+            )
+
+            if selected_dataset == "All Datasets":
+                risk_dataset = risk_history_data.iloc[-1]["dataset_name"]
+                st.caption(
+                    "Showing the most recently recorded dataset because "
+                    "the dataset filter is set to All Datasets."
+                )
+
+            elif selected_dataset in available_datasets:
+                risk_dataset = selected_dataset
+
+            else:
+                st.info(
+                    f"No saved risk history is available for "
+                    f"'{selected_dataset}'. Run the pipeline for this dataset "
+                    "to create its risk history."
+                )
+                risk_dataset = None
+
+            if risk_dataset is not None:
+                dataset_risk_history = risk_history_data[
+                    risk_history_data["dataset_name"] == risk_dataset
+                ].copy()
+
+                trend_result = analyze_risk_trends(
+                    dataset_risk_history,
+                    dataset_name=str(risk_dataset)
+                )
+
+                latest_record = dataset_risk_history.iloc[-1]
+
+                st.subheader("Latest Saved Risk Assessment")
+
+                st.caption(f"Dataset: {risk_dataset}")
+
+                history_col1, history_col2, history_col3 = st.columns(3)
+
+                history_col1.metric(
+                    "Latest Risk Score",
+                    f"{float(latest_record['risk_score']):.2f} / 100"
+                )
+
+                if "risk_level" in latest_record.index:
+                    history_col2.metric(
+                        "Risk Level",
+                        str(latest_record["risk_level"])
+                    )
+                else:
+                    history_col2.metric("Risk Level", "Not available")
+
+                history_col3.metric(
+                    "Risk Trend",
+                    trend_result["trend"]
+                )
+
+                if trend_result["score_change"] is not None:
+                    st.metric(
+                        "Change vs Previous Execution",
+                        f"{trend_result['score_change']:+.2f}",
+                        delta_color="inverse"
+                    )
+                else:
+                    st.metric(
+                        "Change vs Previous Execution",
+                        "Insufficient data"
+                    )
+
+                st.caption(
+                    f"Valid historical executions: "
+                    f"{trend_result['execution_count']}"
+                )
+
+                for warning in trend_result["warnings"]:
+                    if trend_result["trend"] == "Worsening":
+                        st.warning(warning)
+                    elif trend_result["trend"] == "Improving":
+                        st.success(warning)
+                    else:
+                        st.info(warning)
+
+                st.subheader("Risk Score History")
+
+                chart_data = dataset_risk_history[
+                    ["parsed_timestamp", "risk_score"]
+                ].copy()
+
+                chart_data = chart_data.set_index("parsed_timestamp")
+
+                st.line_chart(
+                    chart_data,
+                    width="stretch"
+                )
+
+                st.subheader("Historical Risk Records")
+
+                display_columns = [
+                    column
+                    for column in [
+                        "timestamp",
+                        "dataset_name",
+                        "risk_score",
+                        "risk_level",
+                        "quality_score",
+                        "missing_percentage",
+                        "duplicate_percentage",
+                        "trend",
+                        "recurring_issues",
+                    ]
+                    if column in dataset_risk_history.columns
+                ]
+
+                display_history = dataset_risk_history.sort_values(
+                    "parsed_timestamp",
+                    ascending=False
+                )
+
+                st.dataframe(
+                    display_history[display_columns],
+                    width="stretch",
+                    hide_index=True
+                )
+
+except (
+    OSError,
+    ValueError,
+    TypeError,
+    KeyError,
+    ZeroDivisionError,
+) as error:
+    st.error(
+        f"Could not load or analyze risk history: {error}"
+    )

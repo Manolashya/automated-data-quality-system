@@ -8,6 +8,7 @@ from src.pipeline.runner import run_pipeline
 from src.history.history_comparator import compare_quality_history
 from src.alerts.alert_history import load_alert_history
 from src.history.history_tracker import DEFAULT_HISTORY_PATH
+from src.history.risk_history import load_risk_history
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +35,7 @@ def temporary_history(monkeypatch, tmp_path):
 
     history_path = tmp_path / "quality_history.csv"
     alert_history_path = tmp_path / "quality_alert_history.csv"
+    risk_history_path = tmp_path / "risk_history.csv"
 
     monkeypatch.setattr(
         "src.history.history_tracker.DEFAULT_HISTORY_PATH",
@@ -43,6 +45,10 @@ def temporary_history(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "src.alerts.alert_history.DEFAULT_ALERT_HISTORY_PATH",
         alert_history_path
+    )
+    monkeypatch.setattr(
+        "src.history.risk_history.DEFAULT_RISK_HISTORY_PATH",
+        risk_history_path
     )
 
     return history_path
@@ -65,6 +71,8 @@ def test_complete_pipeline_execution(dirty_df, temporary_history):
         "recommendations",
         "alerts",
         "alert_history_path",
+        "risk_result",
+        "risk_history_path",
     }
 
     assert set(results.keys()) == expected_keys
@@ -463,3 +471,64 @@ def test_pipeline_appends_alert_history_on_repeated_runs(
 
     assert "first_run.csv" in dataset_names
     assert "second_run.csv" in dataset_names
+
+
+
+# ============================================================
+# Day 56: Risk History Pipeline Integration Tests
+# ============================================================
+
+def test_pipeline_persists_risk_assessment(
+    dirty_df,
+    temporary_history
+):
+    """Test that one successful pipeline run saves one risk record."""
+
+    results = run_pipeline(dirty_df)
+
+    risk_history = load_risk_history(
+        results["risk_history_path"]
+    )
+
+    assert results["risk_history_path"].exists()
+    assert len(risk_history) == 1
+
+    assert results["risk_result"]["risk_score"] >= 0
+    assert results["risk_result"]["risk_level"] in [
+        "Low",
+        "Medium",
+        "High",
+        "Critical",
+    ]
+
+    assert risk_history.iloc[0]["dataset_name"] == (
+        results["profiling_report"]["file_name"]
+    )
+
+    assert float(risk_history.iloc[0]["risk_score"]) == (
+        results["risk_result"]["risk_score"]
+    )
+
+
+def test_pipeline_appends_risk_history_on_repeated_runs(
+    dirty_df,
+    temporary_history
+):
+    """Test that each successful run appends exactly one risk record."""
+
+    first_results = run_pipeline(dirty_df)
+    second_results = run_pipeline(dirty_df)
+
+    risk_history = load_risk_history(
+        first_results["risk_history_path"]
+    )
+
+    assert len(risk_history) == 2
+    assert first_results["risk_history_path"] == (
+        second_results["risk_history_path"]
+    )
+
+    assert all(
+        risk_history["dataset_name"]
+        == first_results["profiling_report"]["file_name"]
+    )

@@ -9,6 +9,8 @@ from src.duplicate_detection.detect import detect_fuzzy_duplicates
 from src.data_drift.detect import detect_data_drift
 from src.reporting.html_report import generate_html_report
 from src.history.history_tracker import save_quality_history
+from src.history.risk_assessor import assess_quality_risk
+from src.history.risk_history import save_risk_history
 from src.history.history_comparator import compare_quality_history
 from src.recommendations.recommendation_engine import (
     generate_recommendations,
@@ -221,6 +223,26 @@ def run_pipeline(
             len(alerts)
         )
 
+        # Step 12: Assess and save quality risk
+        logger.info("Step 12: Assessing quality risk")
+
+        quality_history = pd.read_csv(history_path)
+
+        risk_result = assess_quality_risk(
+            profiling_report=profiling_report,
+            history=quality_history,
+            thresholds=thresholds,
+            dataset_name=profiling_report["file_name"],
+        )
+
+        risk_history_path = save_risk_history(risk_result)
+
+        logger.info(
+            "Step 12 completed. Risk score: %.2f (%s)",
+            risk_result["risk_score"],
+            risk_result["risk_level"],
+        )
+
         # Collect all results
         results = {
             "cleaned_data": cleaned_df,
@@ -234,6 +256,8 @@ def run_pipeline(
             "history_path": history_path,
             "alerts": alerts,
             "alert_history_path": alert_history_path,
+            "risk_result": risk_result,
+            "risk_history_path": risk_history_path,
         }
         logger.info("Data quality pipeline completed successfully")
 
