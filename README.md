@@ -15,11 +15,11 @@ It also maintains execution history and generates prioritized recommendations to
 ### Project Information
 
 - **Project:** CadetX — Automated Data Quality System
-- **Development milestone:** Day 55 completed
+- **Development milestone:** Day 57 completed
 - **Programming language:** Python
 - **Primary libraries:** Pandas, NumPy, Scikit-learn, RapidFuzz, Streamlit, Pytest
 - **Dashboard:** Streamlit
-- **Latest verified test result:** 209 tests passed
+- **Latest verified test result:** 235 tests passed
 - **Repository:** [GitHub Repository](https://github.com/Manolashya/automated-data-quality-system)
 
 ---
@@ -634,10 +634,10 @@ Test coverage includes:
 ### Latest Verified Test Result
 
 ```text
-209 passed in 22.14s
+235 passed
 ```
 
-All 209 tests passed in the latest verified full test-suite execution on Day 55. The overall measured code coverage was 93%.
+All 235 tests passed in the latest verified full test-suite execution on Day 57. The overall measured code coverage was 93% (last measured on Day 55).
 
 To execute the tests again:
 
@@ -1264,6 +1264,25 @@ Implemented persistent risk history tracking and historical risk trend analysis.
 
 ---
 
+## Day 57 - Multi-Dataset Risk Comparison
+
+Implemented comparison of the latest saved risk assessments across datasets.
+
+### Features
+- Compares the latest valid risk record for each dataset.
+- Identifies the highest-risk and lowest-risk datasets.
+- Displays risk scores across datasets using a comparison chart.
+- Shows the distribution of datasets across Low, Medium, High, and Critical risk levels.
+- Displays a dataset-wise risk comparison table in dashboard Section 19.
+- Excludes invalid records and supports empty risk history.
+
+### Testing
+- Added 7 unit tests for the risk comparator.
+- Tested latest-record selection, score sorting, risk-level calculation, invalid records, and missing columns.
+- Full automated test suite: 235 passed.
+
+---
+
 ## Example Dataset
 
 The project includes a customer dataset containing common data quality problems, such as:
@@ -1342,12 +1361,16 @@ The project currently includes:
 - Risk score trend analysis across pipeline executions.
 - Dataset-wise historical risk analysis.
 - Risk history visualization and historical records dashboard.
+- Multi-dataset risk comparison using the latest saved assessments.
+- Highest-risk and lowest-risk dataset identification.
+- Risk-level distribution dashboard.
+- Dataset risk score comparison chart and table.
 - Extended end-to-end integration testing.
 - Automated testing.
 
-**Development milestone:** Day 56 completed.
+**Development milestone:** Day 57 completed.
 
-**Latest verified automated tests:** 228 passed.
+**Latest verified automated tests:** 235 passed.
 
 **Latest verified code coverage:** 93%.
 

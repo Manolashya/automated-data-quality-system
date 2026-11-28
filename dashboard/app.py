@@ -29,6 +29,7 @@ from src.history.trend_analyzer import analyze_quality_trends
 from src.history.risk_assessor import assess_quality_risk
 from src.history.risk_history import load_risk_history
 from src.history.risk_trend_analyzer import analyze_risk_trends
+from src.history.risk_comparator import compare_dataset_risks
 
 DEFAULT_DATASET = PROJECT_ROOT / "data" / "raw" / "customer_data.csv"
 PROFILE_REPORT = PROJECT_ROOT / "reports" / "profiling_report.json"
@@ -2099,4 +2100,119 @@ except (
 ) as error:
     st.error(
         f"Could not load or analyze risk history: {error}"
+    )
+
+# --------------------------------------------------
+# 19. Multi-Dataset Risk Comparison
+# --------------------------------------------------
+
+st.header("19. Multi-Dataset Risk Comparison")
+
+try:
+    comparison_history = load_risk_history()
+
+    latest_risk_comparison = compare_dataset_risks(
+        comparison_history
+    )
+
+    if latest_risk_comparison.empty:
+        st.info(
+            "No valid dataset risk records are available for comparison. "
+            "Run the data quality pipeline for multiple datasets."
+        )
+
+    else:
+        st.write(
+            "This section compares the latest saved risk assessment "
+            "for each dataset."
+        )
+
+        highest_risk = latest_risk_comparison.iloc[0]
+        lowest_risk = latest_risk_comparison.iloc[-1]
+
+        comparison_col1, comparison_col2, comparison_col3 = (
+            st.columns(3)
+        )
+
+        comparison_col1.metric(
+            "Datasets Compared",
+            len(latest_risk_comparison)
+        )
+
+        comparison_col2.metric(
+            "Highest Risk",
+            f"{highest_risk['risk_score']:.2f} / 100",
+            help=str(highest_risk["dataset_name"])
+        )
+
+        comparison_col3.metric(
+            "Lowest Risk",
+            f"{lowest_risk['risk_score']:.2f} / 100",
+            help=str(lowest_risk["dataset_name"])
+        )
+
+        st.subheader("Risk Score Comparison")
+
+        risk_chart = latest_risk_comparison[
+            ["dataset_name", "risk_score"]
+        ].copy()
+
+        risk_chart = risk_chart.set_index("dataset_name")
+
+        st.bar_chart(
+            risk_chart,
+            width="stretch"
+        )
+
+        st.subheader("Risk-Level Distribution")
+
+        risk_order = [
+            "Low",
+            "Medium",
+            "High",
+            "Critical",
+        ]
+
+        risk_distribution = (
+            latest_risk_comparison["risk_level"]
+            .value_counts()
+            .reindex(risk_order, fill_value=0)
+            .rename_axis("Risk Level")
+            .reset_index(name="Dataset Count")
+        )
+
+        st.bar_chart(
+            risk_distribution.set_index("Risk Level"),
+            width="stretch"
+        )
+
+        st.dataframe(
+            risk_distribution,
+            width="stretch",
+            hide_index=True
+        )
+
+        st.subheader("Dataset Risk Comparison Table")
+
+        comparison_columns = [
+            "dataset_name",
+            "risk_score",
+            "risk_level",
+            "timestamp",
+        ]
+
+        st.dataframe(
+            latest_risk_comparison[comparison_columns],
+            width="stretch",
+            hide_index=True
+        )
+
+except (
+    OSError,
+    ValueError,
+    TypeError,
+    KeyError,
+) as error:
+    st.error(
+        f"Could not compare dataset risks: {error}"
     )
